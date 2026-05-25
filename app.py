@@ -8,6 +8,7 @@ Routes:
   GET  /download/<job_id> → stream the finished file to the browser
 """
 
+import re
 import threading
 import uuid
 from pathlib import Path
@@ -17,6 +18,17 @@ from flask import Flask, jsonify, render_template, request, send_file
 from downloader import DOWNLOAD_DIR, QUALITY_OPTIONS, VideoDownloader
 
 app = Flask(__name__)
+
+_YT_URL_RE = re.compile(
+    r'https?://(?:www\.)?'
+    r'(?:youtube\.com/(?:watch\?[^\s<>"\']+|shorts/[^\s<>"\']+|playlist\?[^\s<>"\']+)'
+    r'|youtu\.be/[^\s<>"\']+)'
+)
+
+def _extract_url(text: str) -> str:
+    """Pull the first YouTube URL out of pasted text, however messy."""
+    m = _YT_URL_RE.search(text)
+    return m.group(0) if m else text.strip()
 
 # ── Job store ─────────────────────────────────────────────────────────────────
 # Each download gets a UUID key. Protected by a lock for thread safety.
@@ -40,7 +52,7 @@ def index():
 @app.route("/start", methods=["POST"])
 def start():
     data        = request.get_json(force=True) or {}
-    url         = (data.get("url") or "").strip()
+    url         = _extract_url(data.get("url") or "")
     quality_key = str(data.get("quality") or "1")
 
     if not url:
