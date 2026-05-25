@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="{{ theme }}">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -10,23 +10,54 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    :root {
-      --red:        #ff0000;
-      --red2:       #ff4444;
-      --red-glow:   rgba(255,0,0,.22);
-      --green:      #22c55e;
-      --yellow:     #f59e0b;
-      --err:        #ef4444;
-      --text:       #f1f1f1;
-      --muted:      #888;
-      --muted2:     #555;
-      --radius:     16px;
+    /* ── Dark theme (default) ──────────────────────────────────────────── */
+    :root, [data-theme="dark"] {
+      --bg:          #080808;
+      --card-bg:     rgba(255,255,255,.04);
+      --card-border: rgba(255,255,255,.08);
+      --card-shine:  rgba(255,255,255,.06);
+      --input-bg:    rgba(255,255,255,.05);
+      --input-border:rgba(255,255,255,.1);
+      --pill-bg:     rgba(255,255,255,.04);
+      --pill-border: rgba(255,255,255,.1);
+      --text:        #f1f1f1;
+      --muted:       #888;
+      --muted2:      #555;
+      --sep:         rgba(255,255,255,.07);
+      --modal-bg:    #111;
+      --modal-border:rgba(255,255,255,.1);
+      --toggle-track:#333;
+      --glow-color:  rgba(255,0,0,.22);
+      --dot-color:   #222;
+      --footer:      #333;
     }
 
-    /* ── Background ─────────────────────────────────────────────────────── */
+    /* ── Light theme ───────────────────────────────────────────────────── */
+    [data-theme="light"] {
+      --bg:          #f4f4f5;
+      --card-bg:     rgba(255,255,255,.85);
+      --card-border: rgba(0,0,0,.08);
+      --card-shine:  rgba(255,255,255,.9);
+      --input-bg:    rgba(0,0,0,.03);
+      --input-border:rgba(0,0,0,.12);
+      --pill-bg:     rgba(0,0,0,.03);
+      --pill-border: rgba(0,0,0,.1);
+      --text:        #0f0f0f;
+      --muted:       #666;
+      --muted2:      #999;
+      --sep:         rgba(0,0,0,.07);
+      --modal-bg:    #fff;
+      --modal-border:rgba(0,0,0,.1);
+      --toggle-track:#ddd;
+      --glow-color:  rgba(255,0,0,.1);
+      --dot-color:   #ddd;
+      --footer:      #aaa;
+    }
+
+    /* ── Base ──────────────────────────────────────────────────────────── */
     body {
       font-family: 'Inter', -apple-system, sans-serif;
-      background: #080808;
+      background: var(--bg);
       color: var(--text);
       min-height: 100vh;
       display: flex;
@@ -36,35 +67,34 @@
       padding: 32px 16px;
       position: relative;
       overflow-x: hidden;
+      transition: background .3s, color .3s;
     }
 
-    /* Glowing orb behind card */
+    /* Glow orb */
     body::before {
       content: '';
       position: fixed;
-      top: 50%;
-      left: 50%;
+      top: 50%; left: 50%;
       transform: translate(-50%, -60%);
-      width: 600px;
-      height: 600px;
-      background: radial-gradient(circle, rgba(255,0,0,.12) 0%, transparent 70%);
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, var(--glow-color) 0%, transparent 70%);
       pointer-events: none;
       z-index: 0;
+      transition: background .3s;
     }
 
-    /* Subtle dot grid */
+    /* Dot grid */
     body::after {
       content: '';
       position: fixed;
       inset: 0;
-      background-image: radial-gradient(circle, #222 1px, transparent 1px);
+      background-image: radial-gradient(circle, var(--dot-color) 1px, transparent 1px);
       background-size: 28px 28px;
-      opacity: .4;
+      opacity: .5;
       pointer-events: none;
       z-index: 0;
     }
 
-    /* ── Layout ─────────────────────────────────────────────────────────── */
     .container {
       position: relative;
       z-index: 1;
@@ -72,7 +102,7 @@
       max-width: 580px;
     }
 
-    /* ── Logo ───────────────────────────────────────────────────────────── */
+    /* ── Logo ──────────────────────────────────────────────────────────── */
     .logo {
       text-align: center;
       margin-bottom: 36px;
@@ -88,273 +118,259 @@
     }
     .logo-ring svg { width: 30px; height: 30px; fill: #fff; }
     .logo h1 {
-      font-size: 28px;
-      font-weight: 800;
-      letter-spacing: -0.6px;
-      background: linear-gradient(135deg, #fff 30%, #aaa);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      font-size: 28px; font-weight: 800; letter-spacing: -.6px;
+      background: linear-gradient(135deg, var(--text) 30%, var(--muted));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
       background-clip: text;
     }
     .logo p { color: var(--muted); font-size: 14px; margin-top: 5px; }
 
-    /* ── Card ───────────────────────────────────────────────────────────── */
+    /* ── Card ──────────────────────────────────────────────────────────── */
     .card {
-      background: rgba(255,255,255,.04);
-      border: 1px solid rgba(255,255,255,.08);
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
       border-radius: 20px;
       padding: 28px;
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
-      box-shadow: 0 32px 64px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.06);
+      box-shadow: 0 32px 64px rgba(0,0,0,.3), inset 0 1px 0 var(--card-shine);
       margin-bottom: 12px;
+      transition: background .3s, border-color .3s;
     }
 
-    /* ── URL input ──────────────────────────────────────────────────────── */
-    .input-wrap {
-      position: relative;
-      margin-bottom: 20px;
-    }
+    /* ── URL input ─────────────────────────────────────────────────────── */
+    .input-wrap { position: relative; margin-bottom: 20px; }
     .input-icon {
-      position: absolute;
-      left: 14px; top: 50%;
+      position: absolute; left: 14px; top: 50%;
       transform: translateY(-50%);
       pointer-events: none;
     }
     .input-icon svg { width: 18px; height: 18px; fill: var(--muted2); display: block; }
-
     .url-input {
       width: 100%;
       padding: 13px 14px 13px 42px;
-      background: rgba(255,255,255,.05);
-      border: 1px solid rgba(255,255,255,.1);
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
       border-radius: 12px;
       color: var(--text);
-      font-size: 14px;
-      font-family: inherit;
+      font-size: 14px; font-family: inherit;
       outline: none;
-      transition: border-color .2s, box-shadow .2s, background .2s;
+      transition: border-color .2s, box-shadow .2s, background .3s;
     }
     .url-input::placeholder { color: var(--muted2); }
     .url-input:focus {
       border-color: rgba(255,0,0,.6);
-      background: rgba(255,255,255,.07);
+      background: var(--input-bg);
       box-shadow: 0 0 0 3px rgba(255,0,0,.12);
     }
 
-    /* ── Thumbnail preview ──────────────────────────────────────────────── */
+    /* ── Thumbnail ─────────────────────────────────────────────────────── */
     #thumb-wrap {
-      display: none;
-      margin-bottom: 20px;
-      border-radius: 12px;
-      overflow: hidden;
-      position: relative;
-      background: #111;
+      display: none; margin-bottom: 20px;
+      border-radius: 12px; overflow: hidden;
+      position: relative; background: #111;
     }
     #thumb-wrap.show { display: block; }
-    #thumb-img {
-      width: 100%;
-      height: 160px;
-      object-fit: cover;
-      display: block;
-    }
+    #thumb-img { width: 100%; height: 160px; object-fit: cover; display: block; }
     #thumb-overlay {
-      position: absolute;
-      bottom: 0; left: 0; right: 0;
+      position: absolute; bottom: 0; left: 0; right: 0;
       padding: 28px 12px 10px;
       background: linear-gradient(transparent, rgba(0,0,0,.85));
-      font-size: 13px;
-      font-weight: 600;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      font-size: 13px; font-weight: 600;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      color: #fff;
     }
 
-    /* ── Quality pills ──────────────────────────────────────────────────── */
+    /* ── Quality pills ─────────────────────────────────────────────────── */
     .section-label {
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: .8px;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 10px;
+      font-size: 11px; font-weight: 700; letter-spacing: .8px;
+      text-transform: uppercase; color: var(--muted); margin-bottom: 10px;
     }
     .quality-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      margin-bottom: 20px;
+      gap: 8px; margin-bottom: 20px;
     }
     .q-pill {
-      padding: 9px 8px;
-      border-radius: 10px;
-      border: 1px solid rgba(255,255,255,.1);
-      background: rgba(255,255,255,.04);
+      padding: 9px 8px; border-radius: 10px;
+      border: 1px solid var(--pill-border);
+      background: var(--pill-bg);
       color: var(--muted);
-      font-size: 13px;
-      font-weight: 600;
-      font-family: inherit;
-      cursor: pointer;
-      text-align: center;
+      font-size: 13px; font-weight: 600; font-family: inherit;
+      cursor: pointer; text-align: center;
       transition: all .15s;
     }
-    .q-pill:hover {
-      border-color: rgba(255,0,0,.4);
-      color: var(--text);
-      background: rgba(255,0,0,.07);
-    }
-    .q-pill.active {
-      border-color: var(--red);
-      background: rgba(255,0,0,.15);
-      color: #fff;
-      box-shadow: 0 0 0 1px var(--red);
-    }
-    .q-pill .pill-label { display: block; font-size: 11px; font-weight: 400; color: inherit; opacity: .7; margin-top: 2px; }
+    .q-pill:hover { border-color: rgba(255,0,0,.4); color: var(--text); background: rgba(255,0,0,.07); }
+    .q-pill.active { border-color: #ff0000; background: rgba(255,0,0,.15); color: #fff; box-shadow: 0 0 0 1px #ff0000; }
 
-    /* ── Download button ────────────────────────────────────────────────── */
+    /* ── Download button ───────────────────────────────────────────────── */
     .btn-dl {
-      width: 100%;
-      padding: 14px;
-      border: none;
-      border-radius: 12px;
-      font-size: 15px;
-      font-weight: 700;
-      font-family: inherit;
+      width: 100%; padding: 14px; border: none; border-radius: 12px;
+      font-size: 15px; font-weight: 700; font-family: inherit;
       cursor: pointer;
       display: flex; align-items: center; justify-content: center; gap: 9px;
-      position: relative;
-      overflow: hidden;
+      position: relative; overflow: hidden;
       background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%);
       color: #fff;
       box-shadow: 0 4px 24px rgba(255,0,0,.35);
       transition: opacity .15s, transform .1s, box-shadow .15s;
     }
     .btn-dl::before {
-      content: '';
-      position: absolute;
-      inset: 0;
+      content: ''; position: absolute; inset: 0;
       background: linear-gradient(135deg, rgba(255,255,255,.15), transparent);
-      opacity: 0;
-      transition: opacity .2s;
+      opacity: 0; transition: opacity .2s;
     }
     .btn-dl:hover::before { opacity: 1; }
     .btn-dl:hover { box-shadow: 0 6px 32px rgba(255,0,0,.5); }
     .btn-dl:active { transform: scale(.98); }
-    .btn-dl:disabled {
-      background: #1e1e1e;
-      box-shadow: none;
-      cursor: not-allowed;
-      color: #444;
-      transform: none;
-    }
+    .btn-dl:disabled { background: var(--sep); box-shadow: none; cursor: not-allowed; color: var(--muted2); transform: none; }
     .btn-dl svg { width: 18px; height: 18px; fill: currentColor; flex-shrink: 0; }
 
-    /* ── Progress card ──────────────────────────────────────────────────── */
+    /* ── Progress card ─────────────────────────────────────────────────── */
     #prog-card { display: none; }
     #prog-card.show { display: block; }
 
-    /* Header row: badge + title */
-    .prog-header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 16px;
-    }
+    .prog-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
     .badge {
       display: inline-flex; align-items: center; gap: 6px;
-      padding: 4px 10px;
-      border-radius: 99px;
+      padding: 4px 10px; border-radius: 99px;
       font-size: 11px; font-weight: 700; letter-spacing: .5px;
-      text-transform: uppercase;
-      flex-shrink: 0;
+      text-transform: uppercase; flex-shrink: 0;
     }
     .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
-    .badge-starting    { background: rgba(255,255,255,.07); color: #777; }
-    .badge-downloading { background: rgba(245,158,11,.15);  color: var(--yellow); }
-    .badge-processing  { background: rgba(245,158,11,.15);  color: var(--yellow); }
-    .badge-done        { background: rgba(34,197,94,.15);   color: var(--green); }
-    .badge-error       { background: rgba(239,68,68,.15);   color: var(--err); }
+    .badge-starting    { background: rgba(128,128,128,.15); color: var(--muted); }
+    .badge-downloading { background: rgba(245,158,11,.15);  color: #f59e0b; }
+    .badge-processing  { background: rgba(245,158,11,.15);  color: #f59e0b; }
+    .badge-done        { background: rgba(34,197,94,.15);   color: #22c55e; }
+    .badge-error       { background: rgba(239,68,68,.15);   color: #ef4444; }
     .badge-starting .dot,
     .badge-downloading .dot,
     .badge-processing .dot { animation: pulse 1.4s ease-in-out infinite; }
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.2} }
 
-    #vid-title {
-      font-size: 14px; font-weight: 500;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-      flex: 1;
-    }
+    #vid-title { font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; }
 
-    /* Progress bar */
-    .bar-track {
-      height: 5px;
-      background: rgba(255,255,255,.07);
-      border-radius: 99px;
-      overflow: hidden;
-      margin-bottom: 14px;
-    }
+    .bar-track { height: 5px; background: var(--sep); border-radius: 99px; overflow: hidden; margin-bottom: 14px; }
     .bar-fill {
-      height: 100%;
-      border-radius: 99px;
+      height: 100%; border-radius: 99px;
       background: linear-gradient(90deg, #ff0000, #ff6b35, #ffaa00);
-      background-size: 200% 100%;
-      transition: width .4s ease;
-      width: 0%;
+      transition: width .4s ease; width: 0%;
     }
-    .bar-fill.indeterminate {
-      width: 40% !important;
-      animation: sweep 1.4s ease-in-out infinite;
-    }
+    .bar-fill.indeterminate { width: 40% !important; animation: sweep 1.4s ease-in-out infinite; }
     .bar-fill.complete { background: linear-gradient(90deg, #22c55e, #4ade80); }
-    @keyframes sweep {
-      0%   { transform: translateX(-130%); }
-      100% { transform: translateX(320%); }
-    }
+    @keyframes sweep { 0%{ transform: translateX(-130%); } 100%{ transform: translateX(320%); } }
 
-    /* Stats */
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 8px;
-      margin-bottom: 14px;
-    }
+    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 14px; }
     .stat-box {
-      background: rgba(255,255,255,.04);
-      border: 1px solid rgba(255,255,255,.07);
-      border-radius: 10px;
-      padding: 10px 10px 8px;
-      text-align: center;
+      background: var(--input-bg); border: 1px solid var(--sep);
+      border-radius: 10px; padding: 10px 10px 8px; text-align: center;
     }
     .stat-label { font-size: 10px; font-weight: 600; letter-spacing: .5px; text-transform: uppercase; color: var(--muted2); margin-bottom: 4px; }
     .stat-value { font-size: 13px; font-weight: 600; color: var(--text); }
 
-    /* Done / Error banners */
-    .banner {
-      border-radius: 12px;
-      padding: 14px 16px;
-      display: flex; align-items: center; gap: 10px;
-      font-size: 14px; font-weight: 500;
-    }
-    .banner-done  { background: rgba(34,197,94,.12);  border: 1px solid rgba(34,197,94,.25); color: var(--green); }
-    .banner-error { background: rgba(239,68,68,.1);   border: 1px solid rgba(239,68,68,.2);  color: var(--err); font-size: 13px; line-height: 1.55; }
+    .banner { border-radius: 12px; padding: 14px 16px; display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 500; }
+    .banner-done  { background: rgba(34,197,94,.12); border: 1px solid rgba(34,197,94,.25); color: #22c55e; }
+    .banner-error { background: rgba(239,68,68,.1);  border: 1px solid rgba(239,68,68,.2);  color: #ef4444; font-size: 13px; line-height: 1.55; }
     .banner svg { width: 18px; height: 18px; fill: currentColor; flex-shrink: 0; }
-    .banner-action {
-      margin-left: auto; font-size: 13px; font-weight: 600;
-      text-decoration: underline; cursor: pointer; white-space: nowrap; color: inherit;
-    }
+    .banner-action { margin-left: auto; font-size: 13px; font-weight: 600; text-decoration: underline; cursor: pointer; white-space: nowrap; color: inherit; }
 
-    /* ── Footer ─────────────────────────────────────────────────────────── */
-    footer {
-      margin-top: 24px;
-      font-size: 12px;
-      color: #333;
-      text-align: center;
-      position: relative; z-index: 1;
+    /* ── Settings gear button ──────────────────────────────────────────── */
+    .gear-btn {
+      position: fixed; top: 20px; right: 20px;
+      width: 40px; height: 40px; border-radius: 50%;
+      background: var(--card-bg); border: 1px solid var(--card-border);
+      backdrop-filter: blur(8px);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; z-index: 10;
+      transition: background .2s, transform .2s;
     }
-    footer a { color: #444; text-decoration: none; }
-    footer a:hover { color: #666; }
+    .gear-btn:hover { background: rgba(255,0,0,.15); transform: rotate(30deg); }
+    .gear-btn svg { width: 18px; height: 18px; fill: var(--muted); }
 
-    /* ── Shake ──────────────────────────────────────────────────────────── */
+    /* ── Settings modal ────────────────────────────────────────────────── */
+    .overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,.6);
+      backdrop-filter: blur(4px);
+      z-index: 20;
+      align-items: center; justify-content: center;
+    }
+    .overlay.show { display: flex; }
+
+    .modal {
+      background: var(--modal-bg);
+      border: 1px solid var(--modal-border);
+      border-radius: 20px;
+      padding: 28px;
+      width: 100%; max-width: 440px;
+      margin: 16px;
+      box-shadow: 0 40px 80px rgba(0,0,0,.5);
+      animation: fadeUp .2s ease;
+    }
+    @keyframes fadeUp { from { opacity:0; transform: translateY(16px); } to { opacity:1; transform: translateY(0); } }
+
+    .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+    .modal-title { font-size: 17px; font-weight: 700; }
+    .close-btn {
+      width: 30px; height: 30px; border-radius: 8px;
+      background: var(--input-bg); border: 1px solid var(--input-border);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: var(--muted); font-size: 16px;
+      transition: background .15s;
+    }
+    .close-btn:hover { background: rgba(255,0,0,.15); color: #ff0000; }
+
+    .setting-row { margin-bottom: 20px; }
+    .setting-row:last-of-type { margin-bottom: 0; }
+    .setting-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); margin-bottom: 10px; }
+
+    /* Theme toggle */
+    .theme-toggle { display: flex; gap: 8px; }
+    .theme-btn {
+      flex: 1; padding: 9px; border-radius: 10px;
+      border: 1px solid var(--pill-border); background: var(--pill-bg);
+      color: var(--muted); font-size: 13px; font-weight: 600;
+      font-family: inherit; cursor: pointer; text-align: center;
+      transition: all .15s;
+    }
+    .theme-btn:hover { border-color: rgba(255,0,0,.4); color: var(--text); }
+    .theme-btn.active { border-color: #ff0000; background: rgba(255,0,0,.15); color: #ff4444; box-shadow: 0 0 0 1px #ff0000; }
+
+    /* Quality grid inside modal */
+    .modal-quality-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+    .modal-quality-grid .q-pill { font-size: 12px; padding: 8px 6px; }
+
+    /* Download folder input */
+    .dir-input {
+      width: 100%; padding: 10px 14px;
+      background: var(--input-bg); border: 1px solid var(--input-border);
+      border-radius: 10px; color: var(--text);
+      font-size: 13px; font-family: monospace;
+      outline: none; transition: border-color .2s;
+    }
+    .dir-input:focus { border-color: rgba(255,0,0,.5); }
+
+    .modal-sep { height: 1px; background: var(--sep); margin: 20px 0; }
+
+    .btn-save {
+      width: 100%; padding: 12px; border: none; border-radius: 10px;
+      background: linear-gradient(135deg, #ff0000, #cc0000);
+      color: #fff; font-size: 14px; font-weight: 700;
+      font-family: inherit; cursor: pointer;
+      box-shadow: 0 4px 16px rgba(255,0,0,.3);
+      transition: box-shadow .15s, transform .1s;
+    }
+    .btn-save:hover { box-shadow: 0 6px 24px rgba(255,0,0,.45); }
+    .btn-save:active { transform: scale(.98); }
+
+    .save-note { font-size: 12px; color: var(--muted); text-align: center; margin-top: 8px; }
+
+    /* ── Footer ────────────────────────────────────────────────────────── */
+    footer { margin-top: 24px; font-size: 12px; color: var(--footer); text-align: center; position: relative; z-index: 1; }
+    footer a { color: var(--footer); text-decoration: none; }
+    footer a:hover { color: var(--muted); }
+
+    /* ── Shake ─────────────────────────────────────────────────────────── */
     @keyframes shake {
       0%,100%{ transform:translateX(0) }
       20%    { transform:translateX(-7px) }
@@ -365,6 +381,14 @@
   </style>
 </head>
 <body>
+
+<!-- Gear / settings button -->
+<button class="gear-btn" onclick="openSettings()" title="Settings">
+  <svg viewBox="0 0 24 24">
+    <path d="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
+  </svg>
+</button>
+
 <div class="container">
 
   <!-- Logo -->
@@ -378,35 +402,30 @@
 
   <!-- Input card -->
   <div class="card">
-
-    <!-- URL -->
     <div class="input-wrap">
       <div class="input-icon">
-        <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z"/></svg>
       </div>
       <input class="url-input" id="url" type="text"
              placeholder="Paste YouTube link here…"
              autocomplete="off" spellcheck="false" />
     </div>
 
-    <!-- Thumbnail preview -->
     <div id="thumb-wrap">
       <img id="thumb-img" alt="" />
       <div id="thumb-overlay"></div>
     </div>
 
-    <!-- Quality -->
     <div class="section-label">Quality</div>
     <div class="quality-grid" id="quality-grid">
       {% for key, opt in qualities.items() %}
-      <button class="q-pill {% if key == '1' %}active{% endif %}"
+      <button class="q-pill {% if key == default_quality %}active{% endif %}"
               data-key="{{ key }}" onclick="selectQuality(this)">
         {{ opt.name }}
       </button>
       {% endfor %}
     </div>
 
-    <!-- Button -->
     <button class="btn-dl" id="dl-btn" onclick="startDownload()">
       <svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zm7-18v12.17l-4.59-4.58L6 11l6 6 6-6-1.41-1.41L13 14.17V2h-1z"/></svg>
       Download
@@ -415,7 +434,6 @@
 
   <!-- Progress card -->
   <div class="card" id="prog-card">
-
     <div class="prog-header">
       <div class="badge badge-starting" id="badge">
         <div class="dot"></div>
@@ -423,42 +441,84 @@
       </div>
       <div id="vid-title"></div>
     </div>
-
     <div class="bar-track">
       <div class="bar-fill indeterminate" id="bar"></div>
     </div>
-
     <div class="stats-grid">
       <div class="stat-box"><div class="stat-label">Speed</div><div class="stat-value" id="s-speed">—</div></div>
       <div class="stat-box"><div class="stat-label">ETA</div><div class="stat-value" id="s-eta">—</div></div>
       <div class="stat-box"><div class="stat-label">Size</div><div class="stat-value" id="s-size">—</div></div>
       <div class="stat-box"><div class="stat-label">Done</div><div class="stat-value" id="s-pct">0%</div></div>
     </div>
-
     <div class="banner banner-done" id="msg-done" style="display:none">
       <svg viewBox="0 0 24 24"><path d="M9 16.2l-4.2-4.2-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg>
       Downloaded successfully!
       <span class="banner-action" onclick="retryDownload()">Save again</span>
     </div>
-
     <div class="banner banner-error" id="msg-error" style="display:none">
       <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
       <span id="err-text"></span>
     </div>
-
   </div>
 
   <footer>Powered by <a href="https://github.com/yt-dlp/yt-dlp" target="_blank">yt-dlp</a> &nbsp;·&nbsp; Flask</footer>
 </div>
 
+<!-- Settings modal -->
+<div class="overlay" id="overlay" onclick="closeIfBackdrop(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Settings</div>
+      <div class="close-btn" onclick="closeSettings()">✕</div>
+    </div>
+
+    <!-- Theme -->
+    <div class="setting-row">
+      <div class="setting-label">Theme</div>
+      <div class="theme-toggle">
+        <button class="theme-btn" id="theme-dark"  onclick="setTheme('dark')">🌙 Dark</button>
+        <button class="theme-btn" id="theme-light" onclick="setTheme('light')">☀️ Light</button>
+      </div>
+    </div>
+
+    <!-- Default quality -->
+    <div class="setting-row">
+      <div class="setting-label">Default Quality</div>
+      <div class="modal-quality-grid" id="cfg-quality-grid">
+        {% for key, opt in qualities.items() %}
+        <button class="q-pill {% if key == default_quality %}active{% endif %}"
+                data-key="{{ key }}" onclick="setCfgQuality(this)">
+          {{ opt.name }}
+        </button>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Download folder -->
+    <div class="setting-row">
+      <div class="setting-label">Download Folder</div>
+      <input class="dir-input" id="cfg-dir" type="text"
+             value="{{ download_dir }}" spellcheck="false" />
+    </div>
+
+    <div class="modal-sep"></div>
+
+    <button class="btn-save" onclick="saveSettings()">Save Settings</button>
+    <div class="save-note" id="save-note"></div>
+  </div>
+</div>
+
 <script>
+  /* ── State ──────────────────────────────────────────────────────────────── */
   let currentJobId = null;
   let pollTimer    = null;
-  let selectedKey  = '1';
+  let selectedKey  = '{{ default_quality }}';
+  let cfgKey       = '{{ default_quality }}';
+  let currentTheme = '{{ theme }}';
 
-  /* ── Quality pills ──────────────────────────────────────────────────────── */
+  /* ── Quality pills (main) ────────────────────────────────────────────────── */
   function selectQuality(btn) {
-    document.querySelectorAll('.q-pill').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('#quality-grid .q-pill').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     selectedKey = btn.dataset.key;
   }
@@ -468,24 +528,20 @@
     const m = url.match(/[?&]v=([^&#]{11})/) || url.match(/youtu\.be\/([^?&#]{11})/);
     return m ? m[1] : null;
   }
-
   function updateThumb(url) {
-    const vid = extractVideoId(url);
+    const vid  = extractVideoId(url);
     const wrap = document.getElementById('thumb-wrap');
     if (!vid) { wrap.classList.remove('show'); return; }
-    const img = document.getElementById('thumb-img');
-    img.src = `https://img.youtube.com/vi/${vid}/mqdefault.jpg`;
+    const img  = document.getElementById('thumb-img');
+    img.src    = `https://img.youtube.com/vi/${vid}/mqdefault.jpg`;
     img.onerror = () => wrap.classList.remove('show');
     img.onload  = () => wrap.classList.add('show');
     document.getElementById('thumb-overlay').textContent = '';
   }
+  document.getElementById('url').addEventListener('input',  e => updateThumb(e.target.value.trim()));
+  document.getElementById('url').addEventListener('paste',  () => setTimeout(() => updateThumb(document.getElementById('url').value.trim()), 0));
 
-  document.getElementById('url').addEventListener('input', e => updateThumb(e.target.value.trim()));
-  document.getElementById('url').addEventListener('paste', e => {
-    setTimeout(() => updateThumb(document.getElementById('url').value.trim()), 0);
-  });
-
-  /* ── Start download ─────────────────────────────────────────────────────── */
+  /* ── Download ───────────────────────────────────────────────────────────── */
   async function startDownload() {
     const url = document.getElementById('url').value.trim();
     if (!url) { shake(document.getElementById('url')); return; }
@@ -512,7 +568,6 @@
     }
   }
 
-  /* ── Poll ───────────────────────────────────────────────────────────────── */
   function schedulePoll() { pollTimer = setTimeout(doPoll, 600); }
 
   async function doPoll() {
@@ -524,52 +579,94 @@
     } catch (_) { schedulePoll(); }
   }
 
-  /* ── Apply update ───────────────────────────────────────────────────────── */
   function applyUpdate(d) {
     setBadge(d.status);
     if (d.title) {
       document.getElementById('vid-title').textContent = d.title;
       document.getElementById('thumb-overlay').textContent = d.title;
     }
-
     if (d.status === 'starting') {
       indeterminate(true);
-
     } else if (d.status === 'downloading') {
       indeterminate(false);
       setBar(d.percent || 0, false);
-      setText('s-speed', d.speed  || '—');
-      setText('s-eta',   d.eta    || '—');
-      setText('s-size',  d.size   || '—');
+      setText('s-speed', d.speed || '—');
+      setText('s-eta',   d.eta   || '—');
+      setText('s-size',  d.size  || '—');
       setText('s-pct',   (d.percent || 0).toFixed(1) + '%');
-
     } else if (d.status === 'processing') {
-      indeterminate(true);
-      setText('s-pct', '…');
-
+      indeterminate(true); setText('s-pct', '…');
     } else if (d.status === 'done') {
-      indeterminate(false);
-      setBar(100, true);
-      setText('s-pct', '100%');
+      indeterminate(false); setBar(100, true); setText('s-pct', '100%');
       document.getElementById('msg-done').style.display = 'flex';
       setBtn(false);
       triggerDownload(currentJobId);
-
     } else if (d.status === 'error') {
-      indeterminate(false);
-      showError(d.error || 'Download failed.');
-      setBtn(false);
+      indeterminate(false); showError(d.error || 'Download failed.'); setBtn(false);
     }
   }
 
-  /* ── Trigger file save ──────────────────────────────────────────────────── */
   function triggerDownload(id) {
     const a = Object.assign(document.createElement('a'), { href: '/download/' + id, style: 'display:none' });
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(() => a.remove(), 1000);
+    document.body.appendChild(a); a.click(); setTimeout(() => a.remove(), 1000);
   }
   function retryDownload() { if (currentJobId) triggerDownload(currentJobId); }
+
+  /* ── Settings modal ─────────────────────────────────────────────────────── */
+  function openSettings() {
+    refreshThemeButtons(currentTheme);
+    document.getElementById('overlay').classList.add('show');
+  }
+  function closeSettings() { document.getElementById('overlay').classList.remove('show'); }
+  function closeIfBackdrop(e) { if (e.target === document.getElementById('overlay')) closeSettings(); }
+
+  function setTheme(t) {
+    currentTheme = t;
+    document.documentElement.setAttribute('data-theme', t);
+    refreshThemeButtons(t);
+  }
+  function refreshThemeButtons(t) {
+    document.getElementById('theme-dark').classList.toggle('active',  t === 'dark');
+    document.getElementById('theme-light').classList.toggle('active', t === 'light');
+  }
+
+  function setCfgQuality(btn) {
+    document.querySelectorAll('#cfg-quality-grid .q-pill').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    cfgKey = btn.dataset.key;
+  }
+
+  async function saveSettings() {
+    const dir  = document.getElementById('cfg-dir').value.trim();
+    const note = document.getElementById('save-note');
+    note.textContent = '';
+
+    try {
+      const res  = await fetch('/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ theme: currentTheme, default_quality: cfgKey, download_dir: dir }),
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+
+      // Sync main quality grid with new default
+      selectedKey = cfgKey;
+      document.querySelectorAll('#quality-grid .q-pill').forEach(b => {
+        b.classList.toggle('active', b.dataset.key === cfgKey);
+      });
+
+      note.style.color = '#22c55e';
+      note.textContent = '✓ Settings saved to config.json';
+      setTimeout(closeSettings, 1200);
+    } catch (err) {
+      note.style.color = '#ef4444';
+      note.textContent = 'Error: ' + err.message;
+    }
+  }
+
+  // Init theme buttons
+  refreshThemeButtons(currentTheme);
 
   /* ── UI helpers ─────────────────────────────────────────────────────────── */
   const BADGES = {
@@ -595,24 +692,21 @@
   function setBtn(off) { document.getElementById('dl-btn').disabled = off; }
   function showError(msg) {
     setBadge('error');
-    const el = document.getElementById('msg-error');
     document.getElementById('err-text').textContent = msg;
-    el.style.display = 'flex';
+    document.getElementById('msg-error').style.display = 'flex';
   }
   function resetProgress() {
     setBadge('starting');
     setText('vid-title', '');
     setText('s-speed', '—'); setText('s-eta', '—');
     setText('s-size', '—');  setText('s-pct', '0%');
-    indeterminate(true);
-    setBar(0, false);
+    indeterminate(true); setBar(0, false);
     document.getElementById('bar').classList.remove('complete');
     document.getElementById('msg-done').style.display  = 'none';
     document.getElementById('msg-error').style.display = 'none';
   }
   function shake(el) {
-    el.style.animation = 'none';
-    el.offsetHeight;
+    el.style.animation = 'none'; el.offsetHeight;
     el.style.animation = 'shake .35s ease';
   }
 
