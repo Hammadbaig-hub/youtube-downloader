@@ -115,12 +115,12 @@ async function initCharts() {
         datasets: [{
           label: 'Downloads',
           data: data.daily.map(r => r.count),
-          borderColor: '#6366f1',
-          backgroundColor: 'rgba(99,102,241,0.12)',
+          borderColor: '#ff0000',
+          backgroundColor: 'rgba(255,0,0,0.12)',
           borderWidth: 2,
           tension: 0.4,
           fill: true,
-          pointBackgroundColor: '#6366f1',
+          pointBackgroundColor: '#ff0000',
           pointRadius: 3,
           pointHoverRadius: 5,
         }],
@@ -140,7 +140,7 @@ async function initCharts() {
   // Doughnut chart — platforms
   const donutCtx = document.getElementById('platformsChart');
   if (donutCtx && data.platforms.length) {
-    const COLORS = ['#ef4444','#ec4899','#0ea5e9','#1d4ed8','#06b6d4','#14b8a6','#6366f1','#f59e0b'];
+    const COLORS = ['#ff0000','#ef4444','#ec4899','#0ea5e9','#1d4ed8','#06b6d4','#14b8a6','#f59e0b'];
     new Chart(donutCtx, {
       type: 'doughnut',
       data: {
@@ -173,8 +173,8 @@ async function initCharts() {
         datasets: [{
           label: 'Downloads',
           data: data.top_users.map(r => r.count),
-          backgroundColor: 'rgba(99,102,241,0.7)',
-          borderColor: '#6366f1',
+          backgroundColor: 'rgba(255,0,0,0.7)',
+          borderColor: '#ff0000',
           borderWidth: 1,
           borderRadius: 4,
         }],
@@ -194,6 +194,33 @@ async function initCharts() {
 }
 
 document.addEventListener('DOMContentLoaded', initCharts);
+
+
+// ── Theme toggle ──────────────────────────────────────────────────────────────
+const SUN_SVG  = `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`;
+const MOON_SVG = `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
+
+function toggleAdminTheme() {
+  const html    = document.documentElement;
+  const current = html.getAttribute('data-theme') || 'dark';
+  const next    = current === 'dark' ? 'light' : 'dark';
+  html.setAttribute('data-theme', next);
+  const btn = document.getElementById('themeToggleBtn');
+  if (btn) {
+    btn.innerHTML  = next === 'dark' ? SUN_SVG : MOON_SVG;
+    btn.title      = next === 'dark' ? 'Switch to light mode' : 'Switch to dark mode';
+  }
+  fetch('/config', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ theme: next }),
+  }).catch(() => {});
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const btn = document.getElementById('themeToggleBtn');
+  if (btn) btn.addEventListener('click', toggleAdminTheme);
+});
 
 
 // ── Day-range selector (stats page) ──────────────────────────────────────────

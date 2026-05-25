@@ -1,15 +1,15 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="{{ admin_theme }}">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Login — VidFlow</title>
   <link rel="stylesheet" href="/static/admin.css">
   <style>
-    body { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #000; }
+    body { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--ad-bg, #000); }
     .login-card {
       width: 100%; max-width: 400px; margin: 2rem;
-      background: #111; border: 1px solid rgba(255,255,255,.08);
+      background: var(--ad-card, #111); border: 1px solid var(--ad-border, rgba(255,255,255,.08));
       border-radius: 16px; padding: 2.5rem; box-shadow: 0 24px 64px rgba(0,0,0,.5);
     }
     .login-logo {
@@ -17,31 +17,31 @@
     }
     .login-logo-icon {
       width: 40px; height: 40px; border-radius: 10px;
-      background: #6366f1; display: flex; align-items: center; justify-content: center;
+      background: var(--ad-accent, #ff0000); display: flex; align-items: center; justify-content: center;
     }
     .login-logo-icon svg { color: #fff; }
     .login-logo-text { font-size: 1.25rem; font-weight: 700; color: #fff; }
     .login-logo-badge {
-      font-size: .65rem; background: rgba(99,102,241,.2); color: #818cf8;
+      font-size: .65rem; background: rgba(255,0,0,.15); color: #ff7777;
       padding: .15rem .5rem; border-radius: 999px; font-weight: 600; margin-left: .25rem;
       vertical-align: middle;
     }
-    .login-title { font-size: 1.5rem; font-weight: 700; color: #fff; margin-bottom: .25rem; }
-    .login-sub { font-size: .875rem; color: #6b7280; margin-bottom: 2rem; }
+    .login-title { font-size: 1.5rem; font-weight: 700; color: var(--ad-text, #fff); margin-bottom: .25rem; }
+    .login-sub { font-size: .875rem; color: var(--ad-muted, #6b7280); margin-bottom: 2rem; }
     .login-form .form-group { margin-bottom: 1.25rem; }
-    .login-form label { display: block; font-size: .8125rem; font-weight: 500; color: #d1d5db; margin-bottom: .5rem; }
+    .login-form label { display: block; font-size: .8125rem; font-weight: 500; color: var(--ad-text, #d1d5db); margin-bottom: .5rem; }
     .login-form input {
-      width: 100%; padding: .75rem 1rem; background: #1a1a1a; border: 1px solid rgba(255,255,255,.1);
-      border-radius: 10px; color: #fff; font-size: .9375rem; outline: none; box-sizing: border-box;
+      width: 100%; padding: .75rem 1rem; background: var(--ad-card2, #1a1a1a); border: 1px solid var(--ad-border, rgba(255,255,255,.1));
+      border-radius: 10px; color: var(--ad-text, #fff); font-size: .9375rem; outline: none; box-sizing: border-box;
       transition: border-color .2s;
     }
-    .login-form input:focus { border-color: #6366f1; }
+    .login-form input:focus { border-color: var(--ad-accent, #ff0000); }
     .login-btn {
-      width: 100%; padding: .875rem; background: #6366f1; color: #fff;
+      width: 100%; padding: .875rem; background: var(--ad-accent, #ff0000); color: #fff;
       border: none; border-radius: 10px; font-size: .9375rem; font-weight: 600;
       cursor: pointer; transition: background .2s, transform .1s; margin-top: .5rem;
     }
-    .login-btn:hover  { background: #4f46e5; }
+    .login-btn:hover  { background: var(--ad-accent-h, #cc0000); }
     .login-btn:active { transform: scale(.98); }
     .login-error {
       background: rgba(239,68,68,.1); border: 1px solid rgba(239,68,68,.25);
@@ -49,8 +49,8 @@
       font-size: .875rem; margin-bottom: 1.25rem; display: flex; gap: .5rem; align-items: flex-start;
     }
     .login-error svg { flex-shrink: 0; margin-top: 1px; }
-    .login-back { text-align: center; margin-top: 1.5rem; font-size: .8125rem; color: #6b7280; }
-    .login-back a { color: #818cf8; text-decoration: none; }
+    .login-back { text-align: center; margin-top: 1.5rem; font-size: .8125rem; color: var(--ad-muted, #6b7280); }
+    .login-back a { color: var(--ad-accent, #ff0000); text-decoration: none; }
     .login-back a:hover { text-decoration: underline; }
     .lockout-badge {
       display: inline-block; background: rgba(245,158,11,.1); color: #fbbf24;

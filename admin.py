@@ -29,6 +29,7 @@ from sqlalchemy import func, or_
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from models import Admin, Download, SiteStats, User, db
+import config as _config
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -87,6 +88,13 @@ def get_admin_settings() -> dict:
 
 # Initialise cache at import time
 load_admin_settings()
+
+
+# ── Template context ──────────────────────────────────────────────────────────
+@admin_bp.app_context_processor
+def inject_admin_globals():
+    cfg = _config.load()
+    return {'admin_theme': cfg.get('theme', 'dark')}
 
 
 # ── CSRF helpers ──────────────────────────────────────────────────────────────
