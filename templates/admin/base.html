@@ -5,6 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{{ page_title }} — VidFlow Admin</title>
   <link rel="stylesheet" href="/static/admin.css">
+  <!-- Apply theme before first paint to avoid flash -->
+  <script>
+    (function(){
+      var t = localStorage.getItem('vf_admin_theme') || '{{ admin_theme }}';
+      document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
   {% block head %}{% endblock %}
 </head>
 <body class="admin-body">
