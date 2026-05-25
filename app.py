@@ -19,6 +19,7 @@ Routes (login_required):
   DELETE /api/history/<id>     → delete a history record
 """
 
+import json
 import os
 import re
 import threading
@@ -59,6 +60,10 @@ google = oauth.register(
     client_kwargs={"scope": "openid email profile"},
 )
 
+# Register admin blueprint BEFORE create_all so all models are included
+from admin import admin_bp          # noqa: E402
+app.register_blueprint(admin_bp)
+
 with app.app_context():
     db.create_all()
 
@@ -66,6 +71,27 @@ with app.app_context():
 @login_manager.user_loader
 def load_user(user_id: str):
     return db.session.get(User, int(user_id))
+
+
+# ── Maintenance mode ──────────────────────────────────────────────────────────
+_ADMIN_SETTINGS = Path(__file__).parent / 'admin_settings.json'
+
+
+@app.before_request
+def check_maintenance():
+    if request.path.startswith('/admin') or request.path.startswith('/static'):
+        return None
+    try:
+        if _ADMIN_SETTINGS.exists():
+            data = json.loads(_ADMIN_SETTINGS.read_text(encoding='utf-8'))
+            if data.get('maintenance_mode'):
+                return render_template(
+                    'maintenance.html',
+                    message=data.get('maintenance_message', 'Under maintenance.'),
+                )
+    except Exception:
+        pass
+    return None
 
 
 # ── Config ────────────────────────────────────────────────────────────────────

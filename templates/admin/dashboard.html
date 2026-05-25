@@ -1,0 +1,154 @@
+{% extends "admin/base.html" %}
+{% block content %}
+
+<!-- Live stats marker for JS auto-refresh -->
+<div id="dashLiveStats" style="display:none"></div>
+
+<!-- Stats row -->
+<div class="stats-row">
+  <div class="stat-card">
+    <div class="stat-icon si-indigo">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+        <circle cx="9" cy="7" r="4"/>
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+      </svg>
+    </div>
+    <div class="stat-body">
+      <div class="stat-label">Total Users</div>
+      <div class="stat-value">{{ total_users }}</div>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon si-green">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+      </svg>
+    </div>
+    <div class="stat-body">
+      <div class="stat-label">Total Downloads</div>
+      <div class="stat-value">{{ total_downloads }}</div>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon si-blue">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+        <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+        <line x1="3" y1="10" x2="21" y2="10"/>
+      </svg>
+    </div>
+    <div class="stat-body">
+      <div class="stat-label">Downloads Today</div>
+      <div class="stat-value" id="dashToday">{{ downloads_today }}</div>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon si-orange">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/>
+        <line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/>
+      </svg>
+    </div>
+    <div class="stat-body">
+      <div class="stat-label">Top Platform</div>
+      <div class="stat-value" style="font-size:1.3rem">{{ top_platform }}</div>
+    </div>
+  </div>
+</div>
+
+<!-- Charts -->
+<div class="charts-row">
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Downloads (Last 30 Days)</div>
+    </div>
+    <div class="chart-wrap-lg">
+      <canvas id="downloadsChart"></canvas>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Platforms</div>
+    </div>
+    <div class="chart-wrap-md">
+      <canvas id="platformsChart"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- Recent tables -->
+<div class="tables-row">
+  <!-- Recent Downloads -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Recent Downloads</div>
+      <a href="/admin/downloads" class="card-link">View all →</a>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Platform</th>
+            <th>Quality</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for d in recent_downloads %}
+          <tr>
+            <td class="td-title">{{ d.title or 'Unknown' }}</td>
+            <td><span class="platform-badge pb-{{ (d.platform or 'youtube').lower() }}">{{ d.platform or 'YouTube' }}</span></td>
+            <td>{{ d.quality or '—' }}</td>
+            <td class="td-date">{{ d.date.strftime('%b %d, %H:%M') if d.date else '—' }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="4" class="td-empty">No downloads yet</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Recent Users -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Recent Users</div>
+      <a href="/admin/users" class="card-link">View all →</a>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Joined</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for u in recent_users %}
+          <tr>
+            <td>
+              <div class="user-cell">
+                {% if u.avatar %}<img src="{{ u.avatar }}" class="user-avatar-sm" alt="">{% endif %}
+                <a href="/admin/user/{{ u.id }}" class="user-link">{{ u.name or 'Unknown' }}</a>
+              </div>
+            </td>
+            <td class="td-email">{{ u.email or '—' }}</td>
+            <td class="td-date">{{ u.created_at.strftime('%b %d, %Y') if u.created_at else '—' }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="3" class="td-empty">No users yet</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
