@@ -57,7 +57,7 @@ body.admin-body {
   box-shadow: 0 0 0 4px var(--ad-accent-sub);
   flex-shrink: 0;
 }
-.sidebar-logo-icon svg { width: 18px; height: 18px; fill: #fff; }
+.sidebar-logo-icon svg { width: 20px; height: 20px; fill: none; stroke: #fff; stroke-width: 2.5; stroke-linecap: round; }
 .sidebar-logo-text { font-size: 16px; font-weight: 800; letter-spacing: -.4px; line-height: 1.2; }
 .sidebar-logo-sub  { font-size: 10px; color: var(--ad-muted); font-weight: 500; text-transform: uppercase; letter-spacing: .5px; }
 

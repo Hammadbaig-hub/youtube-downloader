@@ -104,9 +104,9 @@ body {
   box-shadow: 0 0 0 4px var(--accent-subtle);
   flex-shrink: 0;
 }
-.nav-logo-icon svg { width: 16px; height: 16px; fill: #fff; }
+.nav-logo-icon svg { width: 20px; height: 20px; fill: none; stroke: #fff; stroke-width: 2.5; stroke-linecap: round; }
 .nav-logo-icon.small { width: 28px; height: 28px; border-radius: 8px; }
-.nav-logo-icon.small svg { width: 12px; height: 12px; }
+.nav-logo-icon.small svg { width: 15px; height: 15px; }
 
 .nav-links {
   display: flex; align-items: center; gap: 32px;
