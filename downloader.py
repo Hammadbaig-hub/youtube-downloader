@@ -5,6 +5,8 @@ Handles single videos and playlists. The VideoDownloader class is the only
 public surface; QUALITY_OPTIONS and DOWNLOAD_DIR are exported for the CLI.
 """
 
+import shutil
+import sys
 import yt_dlp
 from pathlib import Path
 
@@ -22,35 +24,66 @@ from rich.progress import (
 
 console = Console()
 
-DOWNLOAD_DIR = Path("./downloads")
+# Absolute path so it resolves correctly regardless of the working directory
+# the caller (Flask, CLI, GUI) was launched from.
+DOWNLOAD_DIR = Path(__file__).parent / "downloads"
+
+
+def _find_ffmpeg() -> str | None:
+    """Return the directory that contains ffmpeg(.exe), or None if already on PATH.
+
+    Checks PATH first so a system-wide install is preferred. Falls back to the
+    winget per-user install location (Gyan.FFmpeg) which is where winget puts
+    it on Windows when it isn't added to PATH automatically.
+    """
+    if shutil.which("ffmpeg"):
+        return None  # already discoverable — let yt-dlp find it normally
+
+    # winget installs under %LOCALAPPDATA%\Microsoft\WinGet\Packages\Gyan.FFmpeg*
+    winget_base = Path.home() / "AppData" / "Local" / "Microsoft" / "WinGet" / "Packages"
+    for candidate in sorted(winget_base.glob("Gyan.FFmpeg*"), reverse=True):
+        for bin_dir in candidate.rglob("bin"):
+            if (bin_dir / "ffmpeg.exe").exists():
+                return str(bin_dir)
+
+    return None  # not found — yt-dlp will warn if FFmpeg is needed
+
+
+# Resolved once at import time so every download call uses the same path.
+_FFMPEG_LOCATION: str | None = _find_ffmpeg()
 
 # Maps user-facing choice number → yt-dlp format selector string.
-# Fallback chains (/) ensure we still get something when the exact
-# resolution isn't available on a given video.
+#
+# Each entry uses the pattern:
+#   bestvideo[height<=N][ext=mp4]+bestaudio[ext=m4a]   — best mp4+m4a pair (no re-encode)
+#   / bestvideo[height<=N]+bestaudio                   — any codec pair (FFmpeg merges)
+#   / best[height<=N]                                  — pre-muxed fallback (has audio)
+#
+# The [ext=mp4]+[ext=m4a] preference avoids VP9+opus which some players struggle with.
 QUALITY_OPTIONS: dict[str, dict] = {
     "1": {
         "name": "Best Quality (auto)",
-        "format": "bestvideo+bestaudio/best",
+        "format": "bestvideo[ext=mp4]+bestaudio[ext=m4a]/bestvideo+bestaudio/best",
     },
     "2": {
         "name": "1080p HD",
-        "format": "bestvideo[height<=1080]+bestaudio/best[height<=1080]/bestvideo+bestaudio/best",
+        "format": "bestvideo[height<=1080][ext=mp4]+bestaudio[ext=m4a]/bestvideo[height<=1080]+bestaudio/best[height<=1080]",
     },
     "3": {
         "name": "720p HD",
-        "format": "bestvideo[height<=720]+bestaudio/best[height<=720]/bestvideo+bestaudio/best",
+        "format": "bestvideo[height<=720][ext=mp4]+bestaudio[ext=m4a]/bestvideo[height<=720]+bestaudio/best[height<=720]",
     },
     "4": {
         "name": "480p",
-        "format": "bestvideo[height<=480]+bestaudio/best[height<=480]/bestvideo+bestaudio/best",
+        "format": "bestvideo[height<=480][ext=mp4]+bestaudio[ext=m4a]/bestvideo[height<=480]+bestaudio/best[height<=480]",
     },
     "5": {
         "name": "360p",
-        "format": "bestvideo[height<=360]+bestaudio/best[height<=360]/bestvideo+bestaudio/best",
+        "format": "bestvideo[height<=360][ext=mp4]+bestaudio[ext=m4a]/bestvideo[height<=360]+bestaudio/best[height<=360]",
     },
     "6": {
         "name": "Audio Only (MP3)",
-        "format": "bestaudio/best",
+        "format": "bestaudio[ext=m4a]/bestaudio/best",
     },
 }
 
@@ -99,6 +132,7 @@ class VideoDownloader:
         is_playlist: bool = False,
         progress_callback=None,
         output_dir: "Path | None" = None,
+        use_cookies: bool = True,
     ) -> list[str]:
         """Download a single video or a full playlist.
 
@@ -110,6 +144,8 @@ class VideoDownloader:
                                progress dicts. When supplied the Rich progress bar
                                is skipped — used by the GUI frontend.
             output_dir:        Override the save directory (defaults to DOWNLOAD_DIR).
+            use_cookies:       When True (default), pass browser cookies to yt-dlp
+                               so YouTube bot-detection is bypassed.
 
         Returns:
             List of absolute file paths for every saved file.
@@ -140,7 +176,25 @@ class VideoDownloader:
             "no_warnings": True,
             "progress_hooks": [hook],
             "noplaylist": not is_playlist,  # prevent accidental playlist download
+            # Strip characters that Windows rejects in filenames (: * ? " < > |)
+            "windowsfilenames": True,
+            # Limit path length to avoid MAX_PATH issues on Windows
+            "trim_file_name": 200,
+            # Never leave .part files around; avoids [Errno 22] on resume attempts
+            "nopart": True,
         }
+
+        # Provide explicit FFmpeg path so merging works even when FFmpeg is not
+        # on the system PATH (e.g. winget install that skips PATH registration).
+        if _FFMPEG_LOCATION:
+            ydl_opts["ffmpeg_location"] = _FFMPEG_LOCATION
+
+        # Pass browser cookies so YouTube doesn't block with "Sign in to confirm
+        # you're not a bot" (HTTP 429). Try Edge (default on Windows), then Chrome.
+        if use_cookies and sys.platform == "win32":
+            for browser in ("edge", "chrome", "firefox"):
+                ydl_opts["cookiesfrombrowser"] = (browser, None, None, None)
+                break  # use the first entry; yt-dlp logs a warning if unavailable
 
         if is_audio:
             ydl_opts["postprocessors"] = [
