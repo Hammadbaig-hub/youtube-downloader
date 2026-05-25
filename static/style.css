@@ -498,9 +498,10 @@ body {
   border-top: 1px solid var(--border);
 }
 .features-grid {
-  display: grid; grid-template-columns: repeat(3, 1fr);
+  display: grid; grid-template-columns: repeat(4, 1fr);
   gap: 20px;
 }
+@media (max-width: 1100px) { .features-grid { grid-template-columns: repeat(2, 1fr); } }
 .feature-card {
   background: var(--bg-card);
   border: 1px solid var(--border);
@@ -925,6 +926,35 @@ body {
   margin-bottom: 6px;
 }
 .user-stat-label { font-size: 13px; color: var(--text-muted); font-weight: 500; }
+
+/* ── Platform chips ──────────────────────────────────────────────────────── */
+.platforms-strip {
+  display: flex; align-items: center; gap: 12px;
+  margin-top: 18px; flex-wrap: wrap; justify-content: center;
+}
+.platforms-label {
+  font-size: 12px; color: var(--text-muted); font-weight: 500; white-space: nowrap;
+}
+.platform-chips {
+  display: flex; gap: 7px; flex-wrap: wrap; justify-content: center;
+}
+.p-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 11px; border-radius: 999px;
+  font-size: 11.5px; font-weight: 600; border: 1px solid;
+  transition: transform .15s, box-shadow .15s;
+}
+.p-chip:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,.2); }
+.p-chip svg { flex-shrink: 0; }
+.p-yt   { background: rgba(255,0,0,.1);       color: #ff4444; border-color: rgba(255,0,0,.2); }
+.p-ig   { background: rgba(225,48,108,.1);    color: #e1306c; border-color: rgba(225,48,108,.2); }
+.p-tt   { background: rgba(0,0,0,.15);        color: #d0d0d0; border-color: rgba(255,255,255,.12); }
+.p-tw   { background: rgba(29,155,240,.1);    color: #1d9bf0; border-color: rgba(29,155,240,.2); }
+.p-fb   { background: rgba(24,119,242,.1);    color: #1877f2; border-color: rgba(24,119,242,.2); }
+.p-vm   { background: rgba(26,183,234,.1);    color: #1ab7ea; border-color: rgba(26,183,234,.2); }
+.p-more { background: rgba(255,255,255,.05);  color: var(--text-muted); border-color: var(--border); }
+
+[data-theme="light"] .p-tt { background: rgba(0,0,0,.06); color: #333; border-color: rgba(0,0,0,.12); }
 
 /* ── Responsive — auth additions ─────────────────────────────────────────── */
 @media (max-width: 700px) {

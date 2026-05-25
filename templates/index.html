@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VidFlow — Download YouTube Videos &amp; Playlists</title>
+  <title>VidFlow — Download from YouTube, Instagram, TikTok &amp; 1000+ Sites</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
@@ -85,18 +85,18 @@
   <div class="hero-inner">
 
     <div class="hero-badge reveal">
-      <i data-lucide="zap"></i>
-      Free &middot; No Limits &middot; 4K Support
+      <i data-lucide="globe"></i>
+      1000+ Sites &middot; Free &middot; 4K Support
     </div>
 
     <h1 class="hero-title reveal">
-      Download Any YouTube<br />
-      <span class="gradient-text">Video or Playlist</span>
+      Download Videos from<br />
+      <span class="gradient-text">Any Platform</span>
     </h1>
 
     <p class="hero-sub reveal">
-      The fastest way to save YouTube videos in HD quality.<br />
-      Playlists, audio-only MP3, up to 4K — all in one click.
+      YouTube, Instagram, TikTok, Twitter, Facebook, Vimeo &amp; 1000+ more.<br />
+      Paste any URL — VidFlow does the rest.
     </p>
 
     <!-- Search bar -->
@@ -105,12 +105,44 @@
         <i data-lucide="link-2"></i>
       </div>
       <input class="search-input" id="url" type="text"
-             placeholder="Paste YouTube URL here…"
+             placeholder="Paste any video URL (YouTube, Instagram, TikTok…)"
              autocomplete="off" spellcheck="false" />
       <button class="search-btn" id="dl-btn" onclick="startDownload()">
         <i data-lucide="download"></i>
         <span id="dl-btn-text">Download</span>
       </button>
+    </div>
+
+    <!-- Platform chips -->
+    <div class="platforms-strip reveal">
+      <span class="platforms-label">Works with:</span>
+      <div class="platform-chips">
+        <span class="p-chip p-yt">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M23 7s-.3-1.9-1.2-2.7c-1.1-1.2-2.4-1.2-3-1.3C16.2 3 12 3 12 3s-4.2 0-6.8.1c-.6.1-1.9.1-3 1.3C1.3 5.2 1 7 1 7S.7 9.1.7 11.2v2c0 2 .3 4.1.3 4.1s.3 1.9 1.2 2.7c1.1 1.2 2.6 1.1 3.3 1.2C7.3 21.3 12 21.3 12 21.3s4.2 0 6.8-.2c.6-.1 1.9-.1 3-1.3.9-.8 1.2-2.7 1.2-2.7s.3-2.1.3-4.1v-2C23.3 9.1 23 7 23 7zM9.7 15.5V8.4l8.1 3.6-8.1 3.5z"/></svg>
+          YouTube
+        </span>
+        <span class="p-chip p-ig">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+          Instagram
+        </span>
+        <span class="p-chip p-tt">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.18 8.18 0 004.78 1.52V6.74a4.85 4.85 0 01-1.01-.05z"/></svg>
+          TikTok
+        </span>
+        <span class="p-chip p-tw">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          Twitter / X
+        </span>
+        <span class="p-chip p-fb">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+          Facebook
+        </span>
+        <span class="p-chip p-vm">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M22.875 8.5c-.168 3.673-2.73 8.7-7.687 15.073C10.145 30.143 6.067 31 3.84 31c-2.314 0-4.267-2.14-5.86-6.42L-4.527 17.7C-5.867 13.42-7.4 11.28-9.133 11.28c-.42 0-1.88.88-4.38 2.64l-2.627-3.387 2.96-2.633c3.307-2.92 5.84-4.474 7.6-4.667 4.007-.387 6.467 2.34 7.38 8.187.987 6.267 1.673 10.16 2.053 11.68.567 2.58 1.193 3.873 1.88 3.873.527 0 1.32-.833 2.38-2.5 1.053-1.667 1.62-2.94 1.7-3.82.147-1.44-.42-2.167-1.7-2.167-.6 0-1.227.14-1.88.42 1.247-4.073 3.62-6.053 7.12-5.94 2.593.08 3.82 1.76 3.68 5.033"/></svg>
+          Vimeo
+        </span>
+        <span class="p-chip p-more">+ 1000 more</span>
+      </div>
     </div>
 
     <!-- Trust row -->
@@ -259,6 +291,12 @@
     <div class="features-grid">
 
       <div class="feature-card reveal">
+        <div class="feature-icon"><i data-lucide="globe"></i></div>
+        <h3>1000+ Platforms</h3>
+        <p>YouTube, Instagram, TikTok, Twitter, Facebook, Vimeo and thousands more — powered by yt-dlp's massive extractor library.</p>
+      </div>
+
+      <div class="feature-card reveal">
         <div class="feature-icon"><i data-lucide="zap"></i></div>
         <h3>Lightning Fast</h3>
         <p>Direct yt-dlp integration with no middlemen. Downloads run at full network speed with real-time progress.</p>
@@ -319,11 +357,21 @@
 
       <div class="faq-item reveal">
         <button class="faq-q" onclick="toggleFaq(this)">
+          <span>Which platforms are supported?</span>
+          <span class="faq-icon"><i data-lucide="chevron-down"></i></span>
+        </button>
+        <div class="faq-a">
+          <p>VidFlow supports <strong>1000+ sites</strong> via yt-dlp — including YouTube, Instagram (public Reels &amp; posts), TikTok, Twitter/X, Facebook (public videos), Vimeo, Reddit, Dailymotion, and many more. Private/DRM-protected content (Netflix, Prime Video) cannot be downloaded.</p>
+        </div>
+      </div>
+
+      <div class="faq-item reveal">
+        <button class="faq-q" onclick="toggleFaq(this)">
           <span>Why did my download fail?</span>
           <span class="faq-icon"><i data-lucide="chevron-down"></i></span>
         </button>
         <div class="faq-a">
-          <p>Common causes: the video is private or region-locked, YouTube rate limiting (wait a few minutes), or FFmpeg is missing. Install FFmpeg with <code>winget install ffmpeg</code> for HD quality merging.</p>
+          <p>Common causes: the video is private or region-locked, rate limiting by the platform (wait a few minutes and retry), or FFmpeg is missing. Install FFmpeg with <code>winget install ffmpeg</code> for HD quality merging.</p>
         </div>
       </div>
 

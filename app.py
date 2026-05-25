@@ -105,16 +105,27 @@ def _get_cfg() -> dict:
 
 
 # ── URL extraction ────────────────────────────────────────────────────────────
-_YT_URL_RE = re.compile(
-    r'https?://(?:www\.)?'
-    r'(?:youtube\.com/(?:watch\?[^\s<>"\']+|shorts/[^\s<>"\']+|playlist\?[^\s<>"\']+)'
-    r'|youtu\.be/[^\s<>"\']+)'
-)
+_URL_RE = re.compile(r'https?://[^\s<>"\']+')
 
 
 def _extract_url(text: str) -> str:
-    m = _YT_URL_RE.search(text)
+    m = _URL_RE.search(text)
     return m.group(0) if m else text.strip()
+
+
+def _platform_from_url(url: str) -> str:
+    """Guess platform name from URL for the Download record."""
+    u = url.lower()
+    if 'youtube.com' in u or 'youtu.be' in u: return 'YouTube'
+    if 'instagram.com' in u:  return 'Instagram'
+    if 'tiktok.com' in u:     return 'TikTok'
+    if 'twitter.com' in u or 'x.com' in u: return 'Twitter'
+    if 'facebook.com' in u or 'fb.watch' in u: return 'Facebook'
+    if 'vimeo.com' in u:      return 'Vimeo'
+    if 'reddit.com' in u:     return 'Reddit'
+    if 'twitch.tv' in u:      return 'Twitch'
+    if 'dailymotion.com' in u: return 'Dailymotion'
+    return 'Other'
 
 
 # ── Job store ─────────────────────────────────────────────────────────────────
@@ -450,7 +461,7 @@ def _worker(job_id: str, url: str, quality_key: str, is_playlist: bool) -> None:
                 rec = Download(
                     user_id   = uid,
                     title     = title or (Path(fp).stem if fp else "Unknown"),
-                    platform  = "YouTube",
+                    platform  = _platform_from_url(url),
                     quality   = QUALITY_OPTIONS.get(quality_key, {}).get("name", ""),
                     file_size = size,
                 )
