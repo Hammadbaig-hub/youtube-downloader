@@ -6,7 +6,6 @@ public surface; QUALITY_OPTIONS and DOWNLOAD_DIR are exported for the CLI.
 """
 
 import shutil
-import sys
 import yt_dlp
 from pathlib import Path
 
@@ -133,7 +132,6 @@ class VideoDownloader:
         is_playlist: bool = False,
         progress_callback=None,
         output_dir: "Path | None" = None,
-        use_cookies: bool = True,
     ) -> list[str]:
         """Download a single video or a full playlist.
 
@@ -145,8 +143,6 @@ class VideoDownloader:
                                progress dicts. When supplied the Rich progress bar
                                is skipped — used by the GUI frontend.
             output_dir:        Override the save directory (defaults to DOWNLOAD_DIR).
-            use_cookies:       When True (default), pass browser cookies to yt-dlp
-                               so YouTube bot-detection is bypassed.
 
         Returns:
             List of absolute file paths for every saved file.
@@ -190,12 +186,6 @@ class VideoDownloader:
         if _FFMPEG_LOCATION:
             ydl_opts["ffmpeg_location"] = _FFMPEG_LOCATION
 
-        # Pass browser cookies so YouTube doesn't block with "Sign in to confirm
-        # you're not a bot" (HTTP 429). Try Edge (default on Windows), then Chrome.
-        if use_cookies and sys.platform == "win32":
-            for browser in ("edge", "chrome", "firefox"):
-                ydl_opts["cookiesfrombrowser"] = (browser, None, None, None)
-                break  # use the first entry; yt-dlp logs a warning if unavailable
 
         if is_audio:
             ydl_opts["postprocessors"] = [
