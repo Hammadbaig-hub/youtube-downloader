@@ -5,6 +5,7 @@ __pycache__/
 
 # Downloaded files
 downloads/
+backend/downloads/
 
 # Virtual environment
 venv/
@@ -20,6 +21,23 @@ Thumbs.db
 
 # SQLite database
 *.db
+database/*.db
+
+# Logs
+backend/logs/*.log
+logs/
+
+# Config (contains secrets/tokens)
+backend/config.json
+backend/admin_settings.json
+config.json
+admin_settings.json
 
 # yt-dlp archive
 .yt-dlp-archive.txt
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo

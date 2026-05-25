@@ -1,0 +1,9 @@
+{% extends "admin/base.html" %}
+{% block content %}
+<div style="text-align:center;padding:4rem 2rem">
+  <div style="font-size:4rem;margin-bottom:1rem">🚫</div>
+  <div style="font-size:1.5rem;font-weight:700;color:#fff;margin-bottom:.5rem">Access Denied</div>
+  <div style="color:#6b7280;margin-bottom:2rem">{{ message }}</div>
+  <a href="/admin/dashboard" class="btn btn-primary">Back to Dashboard</a>
+</div>
+{% endblock %}

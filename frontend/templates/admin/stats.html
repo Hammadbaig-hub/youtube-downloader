@@ -1,0 +1,102 @@
+{% extends "admin/base.html" %}
+{% block content %}
+
+<!-- Day range selector -->
+<div class="days-selector">
+  {% set current_days = request.args.get('days', '30') %}
+  {% for d in ['7', '14', '30', '90'] %}
+  <button class="days-btn {% if current_days == d %}active{% endif %}" data-days="{{ d }}">{{ d }}d</button>
+  {% endfor %}
+</div>
+
+<!-- Summary stat cards -->
+<div class="stats-row">
+  <div class="stat-card">
+    <div class="stat-icon si-green">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+      </svg>
+    </div>
+    <div class="stat-body">
+      <div class="stat-label">Total Downloads</div>
+      <div class="stat-value">{{ total_downloads }}</div>
+    </div>
+  </div>
+  {% for row in platform_data[:3] %}
+  <div class="stat-card">
+    <div class="stat-icon si-indigo">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/>
+        <line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/>
+      </svg>
+    </div>
+    <div class="stat-body">
+      <div class="stat-label">{{ row.platform }}</div>
+      <div class="stat-value">{{ row.count }} <span style="font-size:.9rem;color:#6b7280">({{ row.pct }}%)</span></div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Charts row -->
+<div class="charts-row">
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Daily Downloads</div>
+    </div>
+    <div class="chart-wrap-lg">
+      <canvas id="downloadsChart"></canvas>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">By Platform</div>
+    </div>
+    <div class="chart-wrap-md">
+      <canvas id="platformsChart"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- Top users chart + platform table -->
+<div class="charts-row">
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Top Users</div>
+    </div>
+    <div class="chart-wrap-lg">
+      <canvas id="topUsersChart"></canvas>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Platform Breakdown</div>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr><th>Platform</th><th>Downloads</th><th>Share</th></tr>
+        </thead>
+        <tbody>
+          {% for row in platform_data %}
+          <tr>
+            <td><span class="platform-badge pb-{{ row.platform.lower() }}">{{ row.platform }}</span></td>
+            <td>{{ row.count }}</td>
+            <td>
+              <div class="pct-bar-wrap">
+                <div class="pct-bar" style="width:{{ row.pct }}%"></div>
+                <span>{{ row.pct }}%</span>
+              </div>
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="3" class="td-empty">No data yet</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
