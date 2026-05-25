@@ -14,3 +14,12 @@ env/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Secrets — never commit
+.env
+
+# SQLite database
+*.db
+
+# yt-dlp archive
+.yt-dlp-archive.txt

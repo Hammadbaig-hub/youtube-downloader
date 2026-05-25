@@ -1,29 +1,74 @@
 """
-app.py — Flask web frontend for the YouTube Downloader.
+app.py — Flask web frontend for VidFlow with Google OAuth2.
 
-Routes:
-  GET  /                  → single-page UI
-  POST /info              → fetch video/playlist metadata (fast, no download)
-  POST /start             → start a background download, returns {job_id}
-  GET  /progress/<job_id> → poll job state as JSON
-  GET  /download/<job_id> → stream the finished file to the browser
-  GET  /config            → return current config as JSON
-  POST /config            → update and save config, returns updated config
+Routes (public):
+  GET  /                       → main UI
+  POST /info                   → fetch video/playlist metadata
+  POST /start                  → start a background download
+  GET  /progress/<job_id>      → poll job state
+  GET  /download/<job_id>      → stream finished file to browser
+  GET  /config                 → return current config
+  POST /config                 → update and save config
+  GET  /login                  → login page
+  GET  /auth/google            → start Google OAuth flow
+  GET  /auth/google/callback   → Google OAuth callback
+  GET  /logout                 → logout and redirect to /login
+
+Routes (login_required):
+  GET  /api/history            → current user's download history
+  DELETE /api/history/<id>     → delete a history record
 """
 
+import os
 import re
 import threading
 import uuid
+from datetime import datetime
 from pathlib import Path
 
-from flask import Flask, jsonify, render_template, request, send_file
+from flask import (Flask, jsonify, redirect, render_template,
+                   request, send_file, url_for)
+from flask_login import (LoginManager, current_user, login_required,
+                         login_user, logout_user)
+from authlib.integrations.flask_client import OAuth
+from dotenv import load_dotenv
 
 import config as _config
 from downloader import QUALITY_OPTIONS, VideoDownloader
+from models import Download, User, db
 
+load_dotenv()
+
+# ── App & extensions ──────────────────────────────────────────────────────────
 app = Flask(__name__)
+app.secret_key = os.environ.get("SECRET_KEY", "dev-change-me-in-production")
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "sqlite:///vidflow.db")
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-# ── Config ──────────────────────────────────────────────────────────────────
+db.init_app(app)
+
+login_manager = LoginManager(app)
+login_manager.login_view = "login_page"
+
+oauth = OAuth(app)
+google = oauth.register(
+    name="google",
+    client_id=os.environ.get("GOOGLE_CLIENT_ID"),
+    client_secret=os.environ.get("GOOGLE_CLIENT_SECRET"),
+    server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
+    client_kwargs={"scope": "openid email profile"},
+)
+
+with app.app_context():
+    db.create_all()
+
+
+@login_manager.user_loader
+def load_user(user_id: str):
+    return db.session.get(User, int(user_id))
+
+
+# ── Config ────────────────────────────────────────────────────────────────────
 _cfg      = _config.load()
 _cfg_lock = threading.Lock()
 
@@ -33,19 +78,20 @@ def _get_cfg() -> dict:
         return dict(_cfg)
 
 
-# ── URL extraction ───────────────────────────────────────────────────────────
+# ── URL extraction ────────────────────────────────────────────────────────────
 _YT_URL_RE = re.compile(
     r'https?://(?:www\.)?'
     r'(?:youtube\.com/(?:watch\?[^\s<>"\']+|shorts/[^\s<>"\']+|playlist\?[^\s<>"\']+)'
     r'|youtu\.be/[^\s<>"\']+)'
 )
 
+
 def _extract_url(text: str) -> str:
     m = _YT_URL_RE.search(text)
     return m.group(0) if m else text.strip()
 
 
-# ── Job store ────────────────────────────────────────────────────────────────
+# ── Job store ─────────────────────────────────────────────────────────────────
 _jobs: dict = {}
 _lock = threading.Lock()
 
@@ -56,23 +102,89 @@ def _update(job_id: str, **kwargs) -> None:
             _jobs[job_id].update(kwargs)
 
 
-# ── Routes ───────────────────────────────────────────────────────────────────
+# ── Auth routes ───────────────────────────────────────────────────────────────
+
+@app.route("/login")
+def login_page():
+    if current_user.is_authenticated:
+        return redirect(url_for("index"))
+    cfg = _get_cfg()
+    return render_template("login.html", theme=cfg.get("theme", "dark"))
+
+
+@app.route("/auth/google")
+def auth_google():
+    redirect_uri = url_for("auth_google_callback", _external=True)
+    return google.authorize_redirect(redirect_uri)
+
+
+@app.route("/auth/google/callback")
+def auth_google_callback():
+    if request.args.get("error"):
+        return redirect(url_for("login_page"))
+    try:
+        token     = google.authorize_access_token()
+        user_info = token.get("userinfo")
+        if not user_info:
+            return redirect(url_for("login_page"))
+
+        user = User.query.filter_by(google_id=user_info["sub"]).first()
+        if not user:
+            user = User(
+                google_id = user_info["sub"],
+                name      = user_info.get("name", ""),
+                email     = user_info.get("email", ""),
+                avatar    = user_info.get("picture", ""),
+            )
+            db.session.add(user)
+            db.session.commit()
+        else:
+            user.avatar = user_info.get("picture", user.avatar)
+            db.session.commit()
+
+        login_user(user)
+        return redirect(url_for("index"))
+    except Exception:
+        return redirect(url_for("login_page"))
+
+
+@app.route("/logout")
+def logout():
+    logout_user()
+    return redirect(url_for("login_page"))
+
+
+# ── Main routes ───────────────────────────────────────────────────────────────
 
 @app.route("/")
 def index():
     cfg = _get_cfg()
+
+    user_stats = {"total": 0, "platforms": 0, "this_month": 0}
+    if current_user.is_authenticated:
+        now        = datetime.utcnow()
+        total      = Download.query.filter_by(user_id=current_user.id).count()
+        platforms  = (db.session.query(Download.platform)
+                      .filter_by(user_id=current_user.id)
+                      .distinct().count())
+        this_month = Download.query.filter(
+            Download.user_id == current_user.id,
+            Download.date    >= datetime(now.year, now.month, 1),
+        ).count()
+        user_stats = {"total": total, "platforms": platforms, "this_month": this_month}
+
     return render_template(
         "index.html",
         qualities       = QUALITY_OPTIONS,
         default_quality = cfg.get("default_quality", "1"),
         theme           = cfg.get("theme", "dark"),
         download_dir    = cfg.get("download_dir", ""),
+        user_stats      = user_stats,
     )
 
 
 @app.route("/info", methods=["POST"])
 def info_route():
-    """Quickly fetch metadata for a URL without downloading anything."""
     data = request.get_json(force=True) or {}
     url  = _extract_url(data.get("url") or "")
     if not url:
@@ -101,6 +213,7 @@ def start():
     quality_key    = str(data.get("quality") or _get_cfg().get("default_quality", "1"))
     is_playlist    = bool(data.get("is_playlist", False))
     playlist_count = int(data.get("playlist_count") or 0)
+    user_id        = current_user.id if current_user.is_authenticated else None
 
     if not url:
         return jsonify(error="No URL provided."), 400
@@ -110,22 +223,23 @@ def start():
     job_id = str(uuid.uuid4())
     with _lock:
         _jobs[job_id] = {
-            "status":           "starting",
-            "is_playlist":      is_playlist,
-            "playlist_title":   "",
-            "playlist_count":   playlist_count,
-            "playlist_index":   0,
-            "skipped":          0,
-            "percent":          0,
-            "overall_percent":  0,
-            "title":            "",
-            "speed":            "",
-            "eta":              "",
-            "size":             "",
-            "filepath":         None,
-            "filename":         None,
-            "files":            [],
-            "error":            None,
+            "status":          "starting",
+            "user_id":         user_id,
+            "is_playlist":     is_playlist,
+            "playlist_title":  "",
+            "playlist_count":  playlist_count,
+            "playlist_index":  0,
+            "skipped":         0,
+            "percent":         0,
+            "overall_percent": 0,
+            "title":           "",
+            "speed":           "",
+            "eta":             "",
+            "size":            "",
+            "filepath":        None,
+            "filename":        None,
+            "files":           [],
+            "error":           None,
         }
 
     threading.Thread(
@@ -140,9 +254,10 @@ def start():
 @app.route("/progress/<job_id>")
 def progress(job_id):
     with _lock:
-        job = _jobs.get(job_id)
-    if job is None:
+        job = dict(_jobs.get(job_id) or {})
+    if not job:
         return jsonify(error="Job not found."), 404
+    job.pop("user_id", None)   # never expose internal user_id to client
     return jsonify(job)
 
 
@@ -189,17 +304,45 @@ def update_config():
     return jsonify(cfg)
 
 
-# ── Background worker ────────────────────────────────────────────────────────
+@app.route("/api/history")
+@login_required
+def api_history():
+    records = (Download.query
+               .filter_by(user_id=current_user.id)
+               .order_by(Download.date.desc())
+               .limit(50).all())
+    return jsonify([{
+        "id":        r.id,
+        "title":     r.title     or "Unknown",
+        "platform":  r.platform  or "YouTube",
+        "quality":   r.quality   or "—",
+        "file_size": r.file_size or "—",
+        "date":      r.date.isoformat() if r.date else "",
+    } for r in records])
+
+
+@app.route("/api/history/<int:record_id>", methods=["DELETE"])
+@login_required
+def delete_history_record(record_id):
+    record = Download.query.filter_by(
+        id=record_id, user_id=current_user.id).first()
+    if not record:
+        return jsonify(error="Not found"), 404
+    db.session.delete(record)
+    db.session.commit()
+    return jsonify(ok=True)
+
+
+# ── Background worker ─────────────────────────────────────────────────────────
 
 def _worker(job_id: str, url: str, quality_key: str, is_playlist: bool) -> None:
 
-    last_pl_index = [0]   # tracks which video we last saw in the hook
+    last_pl_index = [0]
 
     def hook(d: dict) -> None:
         status = d.get("status")
         info   = d.get("info_dict", {})
 
-        # playlist_index is 1-based; n_entries is the total count
         pl_index = info.get("playlist_index") or last_pl_index[0] or 1
         pl_count = info.get("n_entries") or 0
 
@@ -214,7 +357,6 @@ def _worker(job_id: str, url: str, quality_key: str, is_playlist: bool) -> None:
             title      = info.get("title", "")
             pct_video  = min(downloaded / total * 100, 100) if total else 0
 
-            # Overall = completed videos + fraction of current video
             with _lock:
                 saved_count = _jobs[job_id].get("playlist_count") or pl_count
             overall = (
@@ -247,19 +389,25 @@ def _worker(job_id: str, url: str, quality_key: str, is_playlist: bool) -> None:
         out_dir = Path(cfg.get("download_dir", _config.DEFAULTS["download_dir"]))
         out_dir.mkdir(parents=True, exist_ok=True)
 
-        # Playlist: use a per-folder archive so re-runs skip already-saved videos.
         archive_file = out_dir / ".yt-dlp-archive.txt" if is_playlist else None
 
         dl    = VideoDownloader()
         saved = dl.download(
             url, quality_key,
-            is_playlist   = is_playlist,
+            is_playlist       = is_playlist,
             progress_callback = hook,
-            output_dir    = out_dir,
-            archive_file  = archive_file,
+            output_dir        = out_dir,
+            archive_file      = archive_file,
         )
 
         fp = saved[0] if saved else None
+
+        # Read user context before the final status update
+        with _lock:
+            uid   = _jobs[job_id].get("user_id")
+            title = _jobs[job_id].get("title", "")
+            size  = _jobs[job_id].get("size", "")
+
         _update(
             job_id,
             status          = "done",
@@ -269,6 +417,19 @@ def _worker(job_id: str, url: str, quality_key: str, is_playlist: bool) -> None:
             filepath        = str(fp) if fp else None,
             filename        = Path(fp).name if fp else None,
         )
+
+        # Persist download record for logged-in users
+        if uid:
+            with app.app_context():
+                rec = Download(
+                    user_id   = uid,
+                    title     = title or (Path(fp).stem if fp else "Unknown"),
+                    platform  = "YouTube",
+                    quality   = QUALITY_OPTIONS.get(quality_key, {}).get("name", ""),
+                    file_size = size,
+                )
+                db.session.add(rec)
+                db.session.commit()
 
     except Exception as exc:
         msg = str(exc)
