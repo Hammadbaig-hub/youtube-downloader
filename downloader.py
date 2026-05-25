@@ -59,28 +59,29 @@ _FFMPEG_LOCATION: str | None = _find_ffmpeg()
 #   / bestvideo[height<=N]+bestaudio                   — any codec pair (FFmpeg merges)
 #   / best[height<=N]                                  — pre-muxed fallback (has audio)
 #
-# The [ext=mp4]+[ext=m4a] preference avoids VP9+opus which some players struggle with.
+# Format chain for video qualities:
+#   1st choice: mp4 video + m4a audio  (H.264 + AAC — plays everywhere)
+#   2nd choice: mp4 video + any audio, re-encoded to AAC by postprocessor
+#   3rd choice: any video + m4a audio
+#   4th choice: any video + any audio  (FFmpeg will merge; postprocessor re-encodes audio)
+#   last resort: best pre-muxed stream (always has audio)
+def _vfmt(h: int) -> str:
+    cap = f"[height<={h}]" if h else ""
+    return (
+        f"bestvideo{cap}[ext=mp4]+bestaudio[ext=m4a]"
+        f"/bestvideo{cap}[ext=mp4]+bestaudio"
+        f"/bestvideo{cap}+bestaudio[ext=m4a]"
+        f"/bestvideo{cap}+bestaudio"
+        f"/best{cap}[ext=mp4]/best{cap}"
+    )
+
+
 QUALITY_OPTIONS: dict[str, dict] = {
-    "1": {
-        "name": "Best Quality (auto)",
-        "format": "bestvideo[ext=mp4]+bestaudio[ext=m4a]/bestvideo+bestaudio/best",
-    },
-    "2": {
-        "name": "1080p HD",
-        "format": "bestvideo[height<=1080][ext=mp4]+bestaudio[ext=m4a]/bestvideo[height<=1080]+bestaudio/best[height<=1080]",
-    },
-    "3": {
-        "name": "720p HD",
-        "format": "bestvideo[height<=720][ext=mp4]+bestaudio[ext=m4a]/bestvideo[height<=720]+bestaudio/best[height<=720]",
-    },
-    "4": {
-        "name": "480p",
-        "format": "bestvideo[height<=480][ext=mp4]+bestaudio[ext=m4a]/bestvideo[height<=480]+bestaudio/best[height<=480]",
-    },
-    "5": {
-        "name": "360p",
-        "format": "bestvideo[height<=360][ext=mp4]+bestaudio[ext=m4a]/bestvideo[height<=360]+bestaudio/best[height<=360]",
-    },
+    "1": {"name": "Best Quality (auto)", "format": _vfmt(0)},
+    "2": {"name": "1080p HD",           "format": _vfmt(1080)},
+    "3": {"name": "720p HD",            "format": _vfmt(720)},
+    "4": {"name": "480p",               "format": _vfmt(480)},
+    "5": {"name": "360p",               "format": _vfmt(360)},
     "6": {
         "name": "Audio Only (MP3)",
         "format": "bestaudio[ext=m4a]/bestaudio/best",
@@ -204,8 +205,13 @@ class VideoDownloader:
                     "preferredquality": "192",
                 }
             ]
-            # merge_output_format is meaningless for audio-only
             del ydl_opts["merge_output_format"]
+        else:
+            # During the merge step, copy video and force audio to AAC so the
+            # output plays everywhere (Opus/Vorbis in mp4 breaks many players).
+            ydl_opts["postprocessor_args"] = {
+                "merger": ["-c:v", "copy", "-c:a", "aac", "-b:a", "192k"],
+            }
 
         info: dict | None = None
 
