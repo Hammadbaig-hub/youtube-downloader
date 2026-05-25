@@ -132,6 +132,7 @@ class VideoDownloader:
         is_playlist: bool = False,
         progress_callback=None,
         output_dir: "Path | None" = None,
+        archive_file: "Path | None" = None,
     ) -> list[str]:
         """Download a single video or a full playlist.
 
@@ -143,6 +144,8 @@ class VideoDownloader:
                                progress dicts. When supplied the Rich progress bar
                                is skipped — used by the GUI frontend.
             output_dir:        Override the save directory (defaults to DOWNLOAD_DIR).
+            archive_file:      Path to a yt-dlp download archive file. Videos whose
+                               IDs appear in this file are skipped (resume support).
 
         Returns:
             List of absolute file paths for every saved file.
@@ -185,6 +188,10 @@ class VideoDownloader:
         # on the system PATH (e.g. winget install that skips PATH registration).
         if _FFMPEG_LOCATION:
             ydl_opts["ffmpeg_location"] = _FFMPEG_LOCATION
+
+        # Skip videos that were already downloaded in a previous run.
+        if archive_file:
+            ydl_opts["download_archive"] = str(archive_file)
 
 
         if is_audio:
