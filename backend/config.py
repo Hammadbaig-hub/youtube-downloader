@@ -47,7 +47,7 @@ class Config:
     SECRET_KEY = os.getenv("SECRET_KEY", "dev-change-me-in-production")
     SQLALCHEMY_DATABASE_URI = os.getenv(
         "DATABASE_URL",
-        f"sqlite:///{_BASE_DIR / 'database' / 'vidflow.db'}"
+        f"sqlite:///{Path(__file__).parent / 'instance' / 'vidflow.db'}"
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")

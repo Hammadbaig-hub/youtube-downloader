@@ -904,12 +904,12 @@ body {
 .nav-user-btn {
   display: flex; align-items: center; gap: 8px;
   padding: 5px 10px 5px 5px;
-  background: var(--bg-input); border: 1px solid var(--border);
-  border-radius: 99px; cursor: pointer; color: var(--text);
+  background: transparent; border: 1px solid #f0e0c8;
+  border-radius: 99px; cursor: pointer; color: #1a0a0a;
   font-size: 13px; font-weight: 600; font-family: inherit;
   transition: border-color .15s, background .15s;
 }
-.nav-user-btn:hover { border-color: var(--border-hover); background: var(--bg-card); }
+.nav-user-btn:hover { border-color: #d4b896; background: rgba(240, 224, 200, 0.35); }
 
 .nav-avatar {
   width: 28px; height: 28px; border-radius: 50%;
@@ -921,8 +921,8 @@ body {
   display: flex; align-items: center; justify-content: center;
   font-size: 13px; font-weight: 700; flex-shrink: 0;
 }
-.nav-username { max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.nav-chevron { width: 14px; height: 14px; color: var(--text-muted); transition: transform .2s; flex-shrink: 0; }
+.nav-username { max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #1a0a0a; }
+.nav-chevron { width: 14px; height: 14px; color: #7a6060; transition: transform .2s; flex-shrink: 0; }
 .nav-user-btn[aria-expanded="true"] .nav-chevron,
 .nav-user-btn.open .nav-chevron { transform: rotate(180deg); }
 
@@ -931,10 +931,10 @@ body {
   display: none;
   position: absolute; top: calc(100% + 10px); right: 0;
   min-width: 220px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
+  background: #ffffff;
+  border: 1px solid #f0e0c8;
   border-radius: 14px;
-  box-shadow: 0 16px 48px rgba(0, 0, 0, .4);
+  box-shadow: 0 8px 32px rgba(26, 10, 10, 0.12);
   z-index: 200;
   overflow: hidden;
   animation: dropIn .18s ease;
@@ -946,20 +946,20 @@ body {
 }
 
 .dropdown-user-info { padding: 14px 16px 12px; }
-.dropdown-name  { font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.dropdown-email { font-size: 12px; color: var(--text-muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dropdown-name  { font-size: 14px; font-weight: 700; color: #1a0a0a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dropdown-email { font-size: 12px; color: #7a6060; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-.dropdown-sep { height: 1px; background: var(--border); margin: 0; }
+.dropdown-sep { height: 1px; background: #f0e0c8; margin: 0; }
 
 .dropdown-item {
   display: flex; align-items: center; gap: 10px;
   padding: 11px 16px;
-  color: var(--text-muted);
+  color: #5a3e3e;
   font-size: 13px; font-weight: 500;
   text-decoration: none; cursor: pointer;
   transition: background .12s, color .12s;
 }
-.dropdown-item:hover { background: var(--bg-input); color: var(--text); }
+.dropdown-item:hover { background: #faf7f2; color: #1a0a0a; }
 .dropdown-item svg { width: 15px; height: 15px; flex-shrink: 0; }
 
 .dropdown-item-danger { color: var(--error); }
@@ -1093,6 +1093,28 @@ button {
 nav a, .nav-link {
   font-weight: 500;
   letter-spacing: -0.01em;
+  position: relative;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+nav a::after, .nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: #9b2c2c;
+  transition: width 0.3s ease;
+}
+
+nav a:hover { color: #9b2c2c !important; }
+nav a:hover::after { width: 100%; }
+
+nav a.active {
+  color: #9b2c2c !important;
+  font-weight: 600;
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -1444,4 +1466,325 @@ section,
   .features-grid {
     grid-template-columns: 1fr !important;
   }
+}
+
+/* ════════════════════════════════════════════════════════
+   PRO ANIMATIONS
+   ════════════════════════════════════════════════════════ */
+
+/* ── 1. Hero H1: word-by-word fade + slide-up ────────── */
+@keyframes wordIn {
+  from { opacity: 0; transform: translateY(22px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.hw {
+  display: inline-block;
+  opacity: 0;
+  animation: wordIn .55s cubic-bezier(.22, 1, .36, 1) both;
+  animation-delay: var(--hw-d, 0s);
+}
+
+/* ── 2. "Any Platform": gradient shimmer left→right ─── */
+@keyframes shimmer {
+  from { background-position: -200% center; }
+  to   { background-position:  200% center; }
+}
+.hero-title .gradient-text {
+  display: inline-block;
+  background: linear-gradient(
+    90deg,
+    #cc0000 0%, #ff4444 25%, #ffaaaa 50%, #ff4444 75%, #cc0000 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 2.8s linear infinite,
+             wordIn .55s cubic-bezier(.22, 1, .36, 1) .44s both;
+}
+
+/* ── 3. Hero badge: subtle pulse (box-shadow to avoid
+        conflicting with the reveal transform/opacity
+        transition on .hero-badge.reveal.visible) ──────── */
+@keyframes badgePulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(155, 44, 44, 0); }
+  50%       { box-shadow: 0 0 0 6px rgba(155, 44, 44, 0.14); }
+}
+.hero-badge.visible {
+  animation: badgePulse 2.8s ease-in-out 1s infinite;
+}
+
+/* ── 4. Hero subtitle: fade-in with 0.4s entry delay ─── */
+.hero-sub.reveal {
+  transition-delay: .4s;
+}
+
+/* ── 5. Section h2: enhanced slide-up on scroll ──────── */
+.section-title.reveal {
+  transform: translateY(32px);
+  transition-delay: .1s;
+}
+
+/* ── 6. Feature card h3: letter-spacing on hover ──────── */
+.feature-card h3 {
+  transition: letter-spacing .3s ease !important;
+}
+.feature-card:hover h3 {
+  letter-spacing: .05em !important;
+}
+
+/* ── 7. Section tag: 0.6s delay on scroll ──────────────── */
+.section-tag.reveal {
+  transition-delay: .6s;
+}
+
+/* ── 8. FAQ question: colour transition on hover ──────── */
+.faq-q > span:first-child {
+  transition: color .2s ease;
+}
+.faq-q:hover > span:first-child {
+  color: #9b2c2c !important;
+}
+
+/* ── 9. Footer brand: letter-spacing opens on hover ─────  */
+.footer-logo {
+  cursor: default;
+  transition: letter-spacing .35s ease !important;
+}
+.footer-logo:hover {
+  letter-spacing: .06em !important;
+}
+
+/* ── 10. Nav links: underline grows from left on hover ── */
+.nav-links a {
+  position: relative !important;
+}
+.nav-links a::after {
+  content: '';
+  position: absolute;
+  bottom: -3px; left: 0;
+  width: 0; height: 2px;
+  background: #9b2c2c;
+  border-radius: 2px;
+  transition: width .25s ease;
+}
+.nav-links a:hover::after {
+  width: 100%;
+}
+@media (max-width: 700px) {
+  .nav-links a::after { display: none; }
+}
+
+/* ── 11. Counter: "1000" counts up from 0 ────────────── */
+@property --count-n {
+  syntax: '<integer>';
+  initial-value: 0;
+  inherits: false;
+}
+.count-badge-num {
+  --count-n: 0;
+  counter-reset: count-n var(--count-n);
+  font-size: inherit;
+  font-weight: inherit;
+  color: inherit;
+}
+.count-badge-num::before {
+  content: counter(count-n);
+}
+.hero-badge.visible .count-badge-num {
+  animation: countUp 2s cubic-bezier(.2, 0, .4, 1) .3s forwards;
+}
+@keyframes countUp {
+  to { --count-n: 1000; }
+}
+
+/* ── 12. Platform chips: stagger fade-in on load ──────── */
+@keyframes chipIn {
+  from { opacity: 0; transform: translateY(10px) scale(.95); }
+  to   { opacity: 1; transform: none; }
+}
+.platform-chips .p-chip {
+  opacity: 0;
+  transform: translateY(10px) scale(.95);
+}
+.platforms-strip.visible .platform-chips .p-chip {
+  opacity: 1;
+  transform: none;
+  animation: chipIn .4s ease backwards;
+}
+.platforms-strip.visible .platform-chips .p-chip:nth-child(1) { animation-delay: .65s; }
+.platforms-strip.visible .platform-chips .p-chip:nth-child(2) { animation-delay: .78s; }
+.platforms-strip.visible .platform-chips .p-chip:nth-child(3) { animation-delay: .91s; }
+.platforms-strip.visible .platform-chips .p-chip:nth-child(4) { animation-delay: 1.04s; }
+.platforms-strip.visible .platform-chips .p-chip:nth-child(5) { animation-delay: 1.17s; }
+.platforms-strip.visible .platform-chips .p-chip:nth-child(6) { animation-delay: 1.30s; }
+.platforms-strip.visible .platform-chips .p-chip:nth-child(7) { animation-delay: 1.43s; }
+
+/* ════════════════════════════════════════════════════════
+   SETTINGS MODAL — CREAM THEME
+   ════════════════════════════════════════════════════════ */
+
+/* ── Overlay ── */
+.overlay {
+  display: flex !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  background: rgba(26, 10, 10, 0.4) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  transition: opacity .28s ease !important;
+}
+.overlay.show {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+/* ── Modal entrance ── */
+@keyframes modalIn {
+  from { opacity: 0; transform: translateY(24px) scale(.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ── Modal card ── */
+.modal {
+  background: #ffffff !important;
+  border: 1px solid #f0e6d3 !important;
+  border-radius: 20px !important;
+  box-shadow: 0 20px 60px rgba(26, 10, 10, 0.15),
+              0 4px 16px rgba(26, 10, 10, 0.08) !important;
+  animation: none !important;
+}
+.overlay.show .modal {
+  animation: modalIn .35s cubic-bezier(.22, 1, .36, 1) both !important;
+}
+
+/* ── Blanket: all text inside modal ── */
+.modal,
+.modal * {
+  color: #1a0a0a !important;
+}
+
+/* ── Title icon ── */
+.modal-title svg,
+.modal-title i {
+  color: #9b2c2c !important;
+}
+
+/* ── Close button ── */
+.close-btn {
+  background: transparent !important;
+  border: 1px solid #f0e6d3 !important;
+  color: #7a6060 !important;
+  transition: background .2s, border-color .2s, color .2s, transform .22s !important;
+}
+.close-btn:hover {
+  background: rgba(155, 44, 44, 0.06) !important;
+  border-color: #9b2c2c !important;
+  color: #9b2c2c !important;
+  transform: rotate(90deg) !important;
+}
+.close-btn svg,
+.close-btn i { color: inherit !important; }
+
+/* ── Setting labels ── */
+.setting-label {
+  color: #9a7a6a !important;
+}
+
+/* ── Theme buttons ── */
+.theme-btn {
+  background: #faf7f2 !important;
+  border: 1px solid #f0e6d3 !important;
+  color: #1a0a0a !important;
+  transition: background .15s, border-color .15s,
+              box-shadow .15s, transform .15s !important;
+}
+.theme-btn:hover {
+  background: #f5efe5 !important;
+  border-color: #d4b896 !important;
+  transform: translateY(-1px) !important;
+}
+.theme-btn.active {
+  background: #9b2c2c !important;
+  border-color: #9b2c2c !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(155, 44, 44, 0.3) !important;
+  transform: none !important;
+}
+.theme-btn svg,
+.theme-btn i { color: inherit !important; }
+
+/* ── Quality pills ── */
+.modal-quality-grid .q-pill {
+  background: #faf7f2 !important;
+  border: 1px solid #f0e6d3 !important;
+  color: #1a0a0a !important;
+  transition: background .15s, border-color .15s,
+              box-shadow .15s, transform .15s !important;
+}
+.modal-quality-grid .q-pill:hover {
+  background: #f5efe5 !important;
+  border-color: #d4b896 !important;
+  transform: translateY(-1px) !important;
+}
+.modal-quality-grid .q-pill.active {
+  background: #9b2c2c !important;
+  border-color: #9b2c2c !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(155, 44, 44, 0.3) !important;
+  transform: none !important;
+}
+
+/* ── Directory input ── */
+.dir-input {
+  background: #faf7f2 !important;
+  border: 1px solid #f0e6d3 !important;
+  color: #1a0a0a !important;
+  border-radius: 10px !important;
+  transition: border-color .2s, box-shadow .2s !important;
+}
+.dir-input::placeholder { color: #b09080 !important; }
+.dir-input:focus {
+  border-color: #9b2c2c !important;
+  box-shadow: 0 0 0 3px rgba(155, 44, 44, 0.1) !important;
+  outline: none !important;
+}
+
+/* ── Separator ── */
+.modal-sep {
+  background: #f0e6d3 !important;
+  height: 1px !important;
+  margin: 20px 0 !important;
+}
+
+/* ── Save button ── */
+.btn-save {
+  background: #9b2c2c !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 10px !important;
+  font-weight: 700 !important;
+  box-shadow: 0 4px 14px rgba(155, 44, 44, 0.28) !important;
+  transition: background .15s, box-shadow .15s, transform .1s !important;
+}
+.btn-save:hover {
+  background: #7f1d1d !important;
+  box-shadow: 0 6px 20px rgba(155, 44, 44, 0.38) !important;
+  transform: translateY(-2px) !important;
+}
+.btn-save:active {
+  transform: translateY(0) scale(.98) !important;
+  box-shadow: 0 2px 8px rgba(155, 44, 44, 0.2) !important;
+}
+.btn-save svg,
+.btn-save i { color: #ffffff !important; }
+
+/* ── Save note ── */
+.save-note {
+  color: #9a7a6a !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  text-align: center !important;
+  margin-top: 10px !important;
+  min-height: 20px !important;
 }

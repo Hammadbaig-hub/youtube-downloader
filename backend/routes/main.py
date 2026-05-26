@@ -60,6 +60,11 @@ def index():
     )
 
 
+@main_bp.route("/pricing")
+def pricing():
+    return render_template("pricing.html", theme="light")
+
+
 @main_bp.route("/info", methods=["POST"])
 def info_route():
     data = request.get_json(force=True) or {}

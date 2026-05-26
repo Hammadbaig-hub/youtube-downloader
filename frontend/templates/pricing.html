@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="{{ theme }}">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pricing — VidFlow</title>
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='assets/favicon.svg') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* ── Base overrides ── */
+    *, *::before, *::after { font-family: 'Poppins', sans-serif !important; }
+    body  { background: #faf7f2 !important; color: #1a0a0a !important; }
+
+    /* ── Navbar fix for pricing page ── */
+    .navbar, header, nav {
+      background: rgba(250, 247, 242, 0.92) !important;
+      backdrop-filter: blur(20px) !important;
+      border-bottom: 1px solid #f0e6d3 !important;
+    }
+    .nav-logo         { color: #1a0a0a !important; }
+    .nav-links a      { color: #7a6060 !important; }
+    .nav-links a:hover { color: #1a0a0a !important; }
+    .nav-logo-icon    { background: #c0392b !important; }
+    .nav-settings-btn {
+      background: transparent !important;
+      border: 1px solid #f0e6d3 !important;
+      color: #7a6060 !important;
+    }
+    .nav-signin-btn {
+      background: #9b2c2c !important;
+      color: #ffffff !important;
+      border: none !important;
+    }
+    .nav-username { color: #1a0a0a !important; }
+
+    /* ── Animations ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(22px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .anim { opacity: 0; animation: fadeUp .55s cubic-bezier(.22,1,.36,1) forwards; }
+    .anim-d1 { animation-delay: .05s; }
+    .anim-d2 { animation-delay: .15s; }
+    .anim-d3 { animation-delay: .22s; }
+    .anim-d4 { animation-delay: .30s; }
+    .anim-d5 { animation-delay: .38s; }
+    .anim-d6 { animation-delay: .46s; }
+
+    /* ── Page layout ── */
+    .pricing-page { padding-top: 64px; }
+
+    /* ── Hero ── */
+    .pricing-hero {
+      text-align: center;
+      padding: 72px 24px 48px;
+    }
+    .pricing-hero-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: #9b2c2c;
+      background: rgba(155, 44, 44, 0.08);
+      border: 1px solid rgba(155, 44, 44, 0.18);
+      border-radius: 99px;
+      padding: 5px 14px;
+      margin-bottom: 20px;
+    }
+    .pricing-hero h1 {
+      font-size: clamp(32px, 5vw, 52px);
+      font-weight: 800;
+      letter-spacing: -.03em;
+      line-height: 1.1;
+      color: #1a0a0a;
+      margin-bottom: 16px;
+    }
+    .pricing-hero h1 span {
+      color: #9b2c2c;
+    }
+    .pricing-hero p {
+      font-size: 17px;
+      color: #7a6060;
+      max-width: 480px;
+      margin: 0 auto;
+      line-height: 1.65;
+    }
+
+    /* ── Cards grid ── */
+    .pricing-section {
+      padding: 0 24px 80px;
+    }
+    .pricing-grid {
+      display: grid !important;
+      grid-template-columns: repeat(3, 1fr) !important;
+      align-items: stretch !important;
+      gap: 24px !important;
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    /* ── Card ── */
+    .price-card {
+      background: #ffffff !important;
+      border: 1px solid #f0e6d3 !important;
+      border-radius: 16px !important;
+      padding: 32px !important;
+      box-shadow: 0 4px 16px rgba(155, 44, 44, 0.07) !important;
+      position: relative;
+      transition: box-shadow .2s, transform .2s;
+      display: flex !important;
+      flex-direction: column !important;
+      height: 100% !important;
+    }
+    .price-card:hover {
+      box-shadow: 0 10px 32px rgba(155, 44, 44, 0.12);
+      transform: translateY(-3px);
+    }
+
+    /* ── Highlighted card ── */
+    .price-card.highlighted {
+      border: 2px solid #9b2c2c !important;
+      background: #ffffff !important;
+      box-shadow: 0 8px 32px rgba(155, 44, 44, 0.12) !important;
+      padding-top: 48px !important;
+    }
+    .price-card.highlighted:hover {
+      box-shadow: 0 14px 40px rgba(155, 44, 44, 0.24);
+    }
+
+    /* ── Badge ── */
+    .popular-badge {
+      position: absolute;
+      top: -1px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #9b2c2c;
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      padding: 5px 18px;
+      border-radius: 0 0 10px 10px;
+      white-space: nowrap;
+    }
+
+    /* ── Card internals ── */
+    .card-plan {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: #9a8070;
+      margin-bottom: 12px;
+    }
+    .highlighted .card-plan { color: #9b2c2c; }
+
+    .card-price {
+      display: flex;
+      align-items: baseline;
+      gap: 4px;
+      margin-bottom: 6px;
+    }
+    .price-amount {
+      font-size: 44px;
+      font-weight: 800;
+      letter-spacing: -.04em;
+      color: #1a0a0a;
+      line-height: 1;
+    }
+    .price-currency {
+      font-size: 22px;
+      font-weight: 700;
+      color: #5a3e3e;
+      align-self: flex-start;
+      margin-top: 6px;
+    }
+    .price-period {
+      font-size: 14px;
+      font-weight: 500;
+      color: #9a8070;
+    }
+
+    .price-original {
+      font-size: 16px;
+      color: #9a8070;
+      text-decoration: line-through;
+      margin-right: 6px;
+    }
+    .discount-badge {
+      background: #22c55e;
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 20px;
+      vertical-align: middle;
+    }
+
+    .card-tagline {
+      font-size: 14px;
+      color: #7a6060;
+      margin-bottom: 28px;
+      line-height: 1.5;
+    }
+
+    .card-divider { display: none; }
+
+    /* ── Strip borders/backgrounds injected by main.css [class*="card"] wildcard ── */
+    .price-card .card-plan,
+    .price-card .card-price,
+    .price-card .card-tagline,
+    .price-card .card-divider,
+    .price-card .card-features,
+    .price-card .card-features li {
+      border: none !important;
+      background: none !important;
+      background-color: transparent !important;
+      box-shadow: none !important;
+      border-radius: 0 !important;
+      transform: none !important;
+    }
+
+    /* ── Feature list ── */
+    .card-features {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      flex: 1 !important;
+    }
+    .card-features li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 14px;
+      color: #3d1515;
+      line-height: 1.45;
+    }
+    .card-features li svg {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .feat-check { color: #9b2c2c; }
+    .feat-x     { color: #9a8070; }
+
+    .highlighted .card-tagline { display: none; }
+
+    /* ── CTA buttons ── */
+    .btn-plan {
+      display: block;
+      width: 100%;
+      padding: 13px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      text-align: center;
+      text-decoration: none;
+      cursor: pointer;
+      border: none;
+      transition: background .15s, box-shadow .15s, transform .1s;
+      margin-top: auto !important;
+    }
+    .btn-plan-outline {
+      background: transparent;
+      border: 1.5px solid #f0e6d3;
+      color: #5a3e3e;
+    }
+    .btn-plan-outline:hover {
+      border-color: #9b2c2c;
+      color: #9b2c2c;
+    }
+    .btn-plan-primary {
+      background: #9b2c2c;
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(155, 44, 44, 0.28);
+    }
+    .btn-plan-primary:hover {
+      background: #7f1d1d;
+      box-shadow: 0 6px 20px rgba(155, 44, 44, 0.36);
+      transform: translateY(-1px);
+    }
+    .btn-plan-primary:active { transform: scale(.98); }
+
+    /* ── Comparison table section ── */
+    .comparison-section {
+      padding: 0 24px 96px;
+    }
+    .comparison-inner {
+      max-width: 960px;
+      margin: 0 auto;
+    }
+    .comparison-heading {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    .comparison-heading h2 {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -.02em;
+      color: #1a0a0a;
+      margin-bottom: 8px;
+    }
+    .comparison-heading p {
+      font-size: 15px;
+      color: #9a8070;
+    }
+
+    /* ── Table ── */
+    .comp-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #ffffff;
+      border: 1px solid #f0e6d3;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 16px rgba(155, 44, 44, 0.07);
+    }
+    .comp-table thead th {
+      padding: 20px 24px;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      color: #9a8070;
+      background: #faf7f2;
+      border-bottom: 1px solid #f0e6d3;
+      text-align: left;
+    }
+    .comp-table thead th:not(:first-child) {
+      text-align: center;
+    }
+    .comp-table thead th.col-highlight {
+      color: #9b2c2c;
+      background: #fdf4f4 !important;
+    }
+    .comp-table tbody tr {
+      border-bottom: 1px solid #f5ede0;
+      transition: background .15s;
+    }
+    .comp-table tbody tr:last-child { border-bottom: none; }
+    .comp-table tbody tr:hover { background: #fdf9f5; }
+    .comp-table td {
+      padding: 16px 24px;
+      font-size: 14px;
+      color: #3a2020;
+    }
+    .comp-table td:not(:first-child) { text-align: center; }
+    .comp-table td.col-highlight {
+      background: #fdf4f4 !important;
+    }
+    .comp-table td:first-child { font-weight: 500; color: #1a0a0a; }
+
+    .check-yes {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px; height: 22px;
+      background: rgba(34, 197, 94, 0.10);
+      border-radius: 50%;
+    }
+    .check-yes svg { width: 12px; height: 12px; color: #22c55e; }
+    .check-no  {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px; height: 22px;
+    }
+    .check-no svg { width: 14px; height: 14px; color: #9a8070; }
+
+    .val-text { font-weight: 600; color: #1a0a0a; }
+    .val-muted { color: #9a8070; }
+
+    /* ── Footer overrides ── */
+    .footer {
+      background: #ffffff !important;
+      border-top: 1px solid #f0e6d3 !important;
+    }
+    .footer-logo { color: #1a0a0a !important; }
+    .footer-copy, .footer-copy a { color: #9a8070 !important; }
+    .footer-links a { color: #9a8070 !important; }
+    .footer-links span { color: #d4b896 !important; }
+    .footer-links a:hover { color: #9b2c2c !important; }
+
+    /* ── Mobile ── */
+    @media (max-width: 860px) {
+      .pricing-grid { grid-template-columns: 1fr; max-width: 440px; }
+      .price-card.highlighted { padding-top: 48px; }
+    }
+    @media (max-width: 600px) {
+      .pricing-hero { padding: 56px 20px 36px; }
+      .pricing-hero h1 { font-size: 30px; }
+      .price-card { padding: 28px 24px; }
+      .comp-table thead th,
+      .comp-table td { padding: 14px 14px; font-size: 13px; }
+    }
+    @media (max-width: 480px) {
+      .comp-table { font-size: 12px; }
+      .comp-table thead th,
+      .comp-table td { padding: 12px 10px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Navbar ─────────────────────────────────────────────────────────────── -->
+<nav class="navbar" id="navbar">
+  <div class="nav-inner">
+    <a class="nav-logo" href="/">
+      <div class="nav-logo-icon">
+        <svg viewBox="0 0 24 24">
+          <path d="M3 5 Q7 15 12 18 Q17 15 21 5"/>
+          <path d="M12 18 L12 22 M9 22 L15 22"/>
+        </svg>
+      </div>
+      VidFlow
+    </a>
+
+    <div class="nav-links" id="nav-links">
+      <a href="/">Home</a>
+      <a href="/#features">Features</a>
+      <a href="/#faq">FAQ</a>
+      <a href="/#history">History</a>
+      <a href="/pricing" style="color:#9b2c2c !important;font-weight:600">Pricing</a>
+    </div>
+
+    <div class="nav-actions">
+      {% if current_user.is_authenticated %}
+      <div class="nav-user" id="nav-user">
+        <button class="nav-user-btn" id="nav-user-btn" onclick="toggleUserMenu()">
+          {% if current_user.avatar %}
+          <img src="{{ current_user.avatar }}" alt="{{ current_user.name or 'User' }}"
+               class="nav-avatar" onerror="this.style.display='none'" />
+          {% else %}
+          <div class="nav-avatar-fallback">{{ (current_user.name or 'U')[0].upper() }}</div>
+          {% endif %}
+          <span class="nav-username">{{ (current_user.name or 'User').split()[0] }}</span>
+          <i data-lucide="chevron-down" class="nav-chevron"></i>
+        </button>
+        <div class="nav-user-dropdown" id="nav-user-dropdown">
+          <div class="dropdown-user-info">
+            <div class="dropdown-name">{{ current_user.name }}</div>
+            <div class="dropdown-email">{{ current_user.email }}</div>
+          </div>
+          <div class="dropdown-sep"></div>
+          <a href="/#history" class="dropdown-item" onclick="closeUserMenu()">
+            <i data-lucide="clock"></i>
+            <span>My Downloads</span>
+          </a>
+          <div class="dropdown-sep"></div>
+          <a href="/logout" class="dropdown-item dropdown-item-danger">
+            <i data-lucide="log-out"></i>
+            <span>Sign Out</span>
+          </a>
+        </div>
+      </div>
+      {% else %}
+      <a href="/login" class="nav-signin-btn">
+        <i data-lucide="log-in"></i>
+        <span>Sign In</span>
+      </a>
+      {% endif %}
+      <button class="hamburger" id="hamburger" onclick="toggleMenu()" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- ── Main ───────────────────────────────────────────────────────────────── -->
+<main class="pricing-page">
+
+  <!-- Hero -->
+  <div class="pricing-hero">
+    <div class="pricing-hero-tag anim anim-d1">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>
+      Simple Pricing
+    </div>
+    <h1 class="anim anim-d2">Simple, Honest Pricing<br><span>No hidden fees.</span></h1>
+    <p class="anim anim-d3">Start free. No credit card required. Upgrade anytime to unlock more downloads.</p>
+  </div>
+
+  <!-- Cards -->
+  <section class="pricing-section">
+    <div class="pricing-grid">
+
+      <!-- Free -->
+      <div class="price-card anim anim-d3">
+        <div class="card-plan">Free</div>
+        <div class="card-price">
+          <span class="price-currency">$</span>
+          <span class="price-amount">0</span>
+          <span class="price-period">/mo</span>
+        </div>
+        <p class="card-tagline">Perfect for occasional downloads.</p>
+        <div class="card-divider"></div>
+        <ul class="card-features">
+          <li>
+            <svg class="feat-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            <span><strong>3 downloads</strong> per day</span>
+          </li>
+          <li>
+            <svg class="feat-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Up to 4K quality</span>
+          </li>
+          <li>
+            <svg class="feat-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>1000+ supported sites</span>
+          </li>
+          <li>
+            <svg class="feat-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Audio extraction (MP3)</span>
+          </li>
+        </ul>
+        <a href="/" class="btn-plan btn-plan-outline">Get Started Free</a>
+      </div>
+
+      <!-- Starter (highlighted) -->
+      <div class="price-card highlighted anim anim-d4">
+        <div class="popular-badge">Most Popular</div>
+        <div class="card-plan">Starter</div>
+        <div class="card-price">
+          <span class="price-original">$6</span>
+          <span class="price-currency">$</span>
+          <span class="price-amount">3</span>
+          <span class="price-period">/mo</span>
+          <span class="discount-badge">50% OFF</span>
+        </div>
+        <p style="color:#9a8070;font-size:14px;margin:8px 0 12px;">For regular downloaders who need more.</p>
+        <div class="card-divider"></div>
+        <ul class="card-features">
+          <li>
+            <svg class="feat-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            <span><strong>20 downloads</strong> per day</span>
+          </li>
+          <li>
+            <svg class="feat-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Up to 4K quality</span>
+          </li>
+          <li>
+            <svg class="feat-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>1000+ supported sites</span>
+          </li>
+          <li>
+            <svg class="feat-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Audio extraction (MP3)</span>
+          </li>
+          <li>
+            <svg class="feat-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Download history</span>
+          </li>
+          <li>
+            <svg class="feat-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Playlist downloads</span>
+          </li>
+        </ul>
+        <a href="/login" class="btn-plan btn-plan-primary">Start Starter Plan</a>
+      </div>
+
+      <!-- Pro -->
+      <div class="price-card anim anim-d5">
+        <div class="card-plan">Pro</div>
+        <div class="card-price">
+          <span class="price-original">$14</span>
+          <span class="price-currency">$</span>
+          <span class="price-amount">8</span>
+          <span class="price-period">/mo</span>
+          <span class="discount-badge">43% OFF</span>
+        </div>
+        <p class="card-tagline">Unlimited access for power users.</p>
+        <div class="card-divider"></div>
+        <ul class="card-features">
+          <li>
+            <svg class="feat-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            <span><strong>Unlimited</strong> downloads</span>
+          </li>
+          <li>
+            <svg class="feat-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Up to 4K quality</span>
+          </li>
+          <li>
+            <svg class="feat-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>1000+ supported sites</span>
+          </li>
+          <li>
+            <svg class="feat-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Audio extraction (MP3)</span>
+          </li>
+          <li>
+            <svg class="feat-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Download history</span>
+          </li>
+          <li>
+            <svg class="feat-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Playlist downloads</span>
+          </li>
+          <li>
+            <svg class="feat-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Priority support</span>
+          </li>
+        </ul>
+        <a href="/login" class="btn-plan btn-plan-outline">Get Pro</a>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Comparison table -->
+  <section class="comparison-section">
+    <div class="comparison-inner">
+      <div class="comparison-heading anim anim-d4">
+        <h2>Full comparison</h2>
+        <p>Everything you get on each plan, side by side.</p>
+      </div>
+
+      <div class="anim anim-d5" style="overflow-x:auto;border-radius:16px;">
+        <table class="comp-table">
+          <thead>
+            <tr>
+              <th style="width:40%">Feature</th>
+              <th>Free</th>
+              <th class="col-highlight">Starter</th>
+              <th>Pro</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Downloads per day</td>
+              <td><span class="val-text">3</span></td>
+              <td class="col-highlight"><span class="val-text">20</span></td>
+              <td><span class="val-text">Unlimited</span></td>
+            </tr>
+            <tr>
+              <td>Max video quality</td>
+              <td><span class="val-text">4K</span></td>
+              <td class="col-highlight"><span class="val-text">4K</span></td>
+              <td><span class="val-text">4K</span></td>
+            </tr>
+            <tr>
+              <td>Supported platforms</td>
+              <td><span class="val-text">1000+</span></td>
+              <td class="col-highlight"><span class="val-text">1000+</span></td>
+              <td><span class="val-text">1000+</span></td>
+            </tr>
+            <tr>
+              <td>Audio extraction (MP3)</td>
+              <td><span class="check-yes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td>
+              <td class="col-highlight"><span class="check-yes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td>
+              <td><span class="check-yes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td>
+            </tr>
+            <tr>
+              <td>Download history</td>
+              <td><span class="check-no"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span></td>
+              <td class="col-highlight"><span class="check-yes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td>
+              <td><span class="check-yes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td>
+            </tr>
+            <tr>
+              <td>Playlist downloads</td>
+              <td><span class="check-no"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span></td>
+              <td class="col-highlight"><span class="check-yes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td>
+              <td><span class="check-yes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td>
+            </tr>
+            <tr>
+              <td>Cross-device sync</td>
+              <td><span class="check-no"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span></td>
+              <td class="col-highlight"><span class="check-yes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td>
+              <td><span class="check-yes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td>
+            </tr>
+            <tr>
+              <td>Priority support</td>
+              <td><span class="check-no"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span></td>
+              <td class="col-highlight"><span class="check-no"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span></td>
+              <td><span class="check-yes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td>
+            </tr>
+            <tr>
+              <td>Price</td>
+              <td><span class="val-text">$0 / mo</span></td>
+              <td class="col-highlight"><span class="val-text">$3 / mo</span></td>
+              <td><span class="val-text">$8 / mo</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ── Footer ─────────────────────────────────────────────────────────────── -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-logo">
+      <div class="nav-logo-icon small">
+        <svg viewBox="0 0 24 24">
+          <path d="M3 5 Q7 15 12 18 Q17 15 21 5"/>
+          <path d="M12 18 L12 22 M9 22 L15 22"/>
+        </svg>
+      </div>
+      VidFlow
+    </div>
+    <p class="footer-copy">
+      &copy; 2026 VidFlow &mdash; Powered by <a href="https://github.com/yt-dlp/yt-dlp" target="_blank">yt-dlp</a>
+      &amp; Flask &mdash; for personal use only.
+    </p>
+    <p class="footer-links">
+      <a href="/#features">Features</a>
+      <span>&middot;</span>
+      <a href="/#faq">FAQ</a>
+      <span>&middot;</span>
+      <a href="/#history">History</a>
+      <span>&middot;</span>
+      <a href="/pricing">Pricing</a>
+    </p>
+  </div>
+</footer>
+
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script>
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+
+  function toggleUserMenu() {
+    var d = document.getElementById('nav-user-dropdown');
+    var b = document.getElementById('nav-user-btn');
+    if (!d) return;
+    var open = d.classList.toggle('show');
+    if (b) b.classList.toggle('open', open);
+  }
+  function closeUserMenu() {
+    var d = document.getElementById('nav-user-dropdown');
+    var b = document.getElementById('nav-user-btn');
+    if (d) d.classList.remove('show');
+    if (b) b.classList.remove('open');
+  }
+  function toggleMenu() {
+    var l = document.getElementById('nav-links');
+    var h = document.getElementById('hamburger');
+    if (l) l.classList.toggle('open');
+    if (h) h.classList.toggle('open');
+  }
+  document.addEventListener('click', function(e) {
+    var nu = document.getElementById('nav-user');
+    if (nu && !nu.contains(e.target)) closeUserMenu();
+  });
+</script>
+</body>
+</html>

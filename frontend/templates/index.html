@@ -26,8 +26,10 @@
     </a>
 
     <div class="nav-links" id="nav-links">
+      <a href="/" class="active">Home</a>
       <a href="#features">Features</a>
       <a href="#faq">FAQ</a>
+      <a href="/pricing">Pricing</a>
       <a href="#history">History</a>
     </div>
 
@@ -88,11 +90,13 @@
 
     <div class="hero-badge reveal">
       <i data-lucide="globe"></i>
-      1000+ Sites &middot; Free &middot; 4K Support
+      <span class="count-badge-num"></span>+ Sites &middot; Free &middot; 4K Support
     </div>
 
-    <h1 class="hero-title reveal">
-      Download Videos from<br />
+    <h1 class="hero-title">
+      <span class="hw" style="--hw-d:.05s">Download</span>
+      <span class="hw" style="--hw-d:.18s">Videos</span>
+      <span class="hw" style="--hw-d:.31s">from</span><br />
       <span class="gradient-text">Any Platform</span>
     </h1>
 
@@ -468,18 +472,6 @@
       <button class="close-btn" onclick="closeSettings()">
         <i data-lucide="x"></i>
       </button>
-    </div>
-
-    <div class="setting-row">
-      <div class="setting-label">Theme</div>
-      <div class="theme-toggle">
-        <button class="theme-btn" id="theme-dark"  onclick="setTheme('dark')">
-          <i data-lucide="moon"></i> Dark
-        </button>
-        <button class="theme-btn" id="theme-light" onclick="setTheme('light')">
-          <i data-lucide="sun"></i> Light
-        </button>
-      </div>
     </div>
 
     <div class="setting-row">
