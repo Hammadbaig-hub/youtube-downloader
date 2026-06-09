@@ -16,12 +16,15 @@ api_bp = Blueprint("api", __name__)
 
 @api_bp.route("/start", methods=["POST"])
 def start():
+    if not current_user.is_authenticated:
+        return jsonify(error="Please sign in to download videos."), 401
+
     data = request.get_json(force=True) or {}
     url = extract_url(data.get("url") or "")
     quality_key = str(data.get("quality") or _config.load().get("default_quality", "1"))
     is_playlist = bool(data.get("is_playlist", False))
     playlist_count = int(data.get("playlist_count") or 0)
-    user_id = current_user.id if current_user.is_authenticated else None
+    user_id = current_user.id
 
     if not url:
         return jsonify(error="No URL provided."), 400

@@ -111,6 +111,11 @@ function extractVideoId(url) {
 
 /* ── Start download ───────────────────────────────────────────────────────── */
 async function startDownload() {
+  if (!window.USER_LOGGED_IN) {
+    showSignupPrompt();
+    return;
+  }
+
   var urlEl = document.getElementById('url');
   var url   = urlEl ? urlEl.value.trim() : '';
   if (!url) { if (urlEl) shake(urlEl.closest('.search-bar') || urlEl); return; }
@@ -361,4 +366,36 @@ function clearHistory() {
   localStorage.removeItem(HISTORY_KEY);
   renderHistory();
   showToast('History cleared', 'info');
+}
+
+/* ── Signup prompt ────────────────────────────────────────────────────────── */
+function showSignupPrompt() {
+  var existing = document.getElementById('signup-prompt-overlay');
+  if (existing) { existing.classList.add('show'); return; }
+
+  var overlay = document.createElement('div');
+  overlay.id = 'signup-prompt-overlay';
+  overlay.innerHTML =
+    '<div class="signup-prompt-box">' +
+      '<div class="signup-prompt-icon">🔒</div>' +
+      '<h3 class="signup-prompt-title">Sign in to Download</h3>' +
+      '<p class="signup-prompt-text">Create a free account to start downloading videos from 1000+ sites.</p>' +
+      '<div class="signup-prompt-actions">' +
+        '<a href="/login" class="signup-prompt-btn-primary">Sign In / Sign Up</a>' +
+        '<button class="signup-prompt-btn-secondary" onclick="closeSignupPrompt()">Maybe Later</button>' +
+      '</div>' +
+    '</div>';
+  overlay.addEventListener('click', function (e) {
+    if (e.target === overlay) closeSignupPrompt();
+  });
+  document.body.appendChild(overlay);
+  requestAnimationFrame(function () { overlay.classList.add('show'); });
+}
+
+function closeSignupPrompt() {
+  var overlay = document.getElementById('signup-prompt-overlay');
+  if (overlay) {
+    overlay.classList.remove('show');
+    setTimeout(function () { overlay.remove(); }, 300);
+  }
 }
