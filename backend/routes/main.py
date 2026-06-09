@@ -62,7 +62,8 @@ def index():
 
 @main_bp.route("/pricing")
 def pricing():
-    return render_template("pricing.html", theme="light")
+    cfg = _config.load()
+    return render_template("pricing.html", theme=cfg.get("theme", "dark"))
 
 
 @main_bp.route("/info", methods=["POST"])

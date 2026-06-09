@@ -10,32 +10,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    /* ── Base overrides ── */
-    *, *::before, *::after { font-family: 'Poppins', sans-serif !important; }
-    body  { background: #faf7f2 !important; color: #1a0a0a !important; }
-
-    /* ── Navbar fix for pricing page ── */
-    .navbar, header, nav {
-      background: rgba(250, 247, 242, 0.92) !important;
-      backdrop-filter: blur(20px) !important;
-      border-bottom: 1px solid #f0e6d3 !important;
-    }
-    .nav-logo         { color: #1a0a0a !important; }
-    .nav-links a      { color: #7a6060 !important; }
-    .nav-links a:hover { color: #1a0a0a !important; }
-    .nav-logo-icon    { background: #c0392b !important; }
-    .nav-settings-btn {
-      background: transparent !important;
-      border: 1px solid #f0e6d3 !important;
-      color: #7a6060 !important;
-    }
-    .nav-signin-btn {
-      background: #9b2c2c !important;
-      color: #ffffff !important;
-      border: none !important;
-    }
-    .nav-username { color: #1a0a0a !important; }
-
     /* ── Animations ── */
     @keyframes fadeUp {
       from { opacity: 0; transform: translateY(22px); }
@@ -85,7 +59,7 @@
     }
     .pricing-hero p {
       font-size: 17px;
-      color: #7a6060;
+      color: #9a8070;
       max-width: 480px;
       margin: 0 auto;
       line-height: 1.65;
@@ -177,7 +151,7 @@
     .price-currency {
       font-size: 22px;
       font-weight: 700;
-      color: #5a3e3e;
+      color: #4a3020;
       align-self: flex-start;
       margin-top: 6px;
     }
@@ -205,7 +179,7 @@
 
     .card-tagline {
       font-size: 14px;
-      color: #7a6060;
+      color: #9a8070;
       margin-bottom: 28px;
       line-height: 1.5;
     }
@@ -242,7 +216,7 @@
       align-items: flex-start;
       gap: 10px;
       font-size: 14px;
-      color: #3d1515;
+      color: #4a3020;
       line-height: 1.45;
     }
     .card-features li svg {
@@ -274,7 +248,7 @@
     .btn-plan-outline {
       background: transparent;
       border: 1.5px solid #f0e6d3;
-      color: #5a3e3e;
+      color: #4a3020;
     }
     .btn-plan-outline:hover {
       border-color: #9b2c2c;
@@ -353,7 +327,7 @@
     .comp-table td {
       padding: 16px 24px;
       font-size: 14px;
-      color: #3a2020;
+      color: #4a3020;
     }
     .comp-table td:not(:first-child) { text-align: center; }
     .comp-table td.col-highlight {
@@ -380,17 +354,6 @@
 
     .val-text { font-weight: 600; color: #1a0a0a; }
     .val-muted { color: #9a8070; }
-
-    /* ── Footer overrides ── */
-    .footer {
-      background: #ffffff !important;
-      border-top: 1px solid #f0e6d3 !important;
-    }
-    .footer-logo { color: #1a0a0a !important; }
-    .footer-copy, .footer-copy a { color: #9a8070 !important; }
-    .footer-links a { color: #9a8070 !important; }
-    .footer-links span { color: #d4b896 !important; }
-    .footer-links a:hover { color: #9b2c2c !important; }
 
     /* ── Mobile ── */
     @media (max-width: 860px) {
@@ -431,7 +394,7 @@
       <a href="/#features">Features</a>
       <a href="/#faq">FAQ</a>
       <a href="/#history">History</a>
-      <a href="/pricing" style="color:#9b2c2c !important;font-weight:600">Pricing</a>
+      <a href="/pricing" class="active">Pricing</a>
     </div>
 
     <div class="nav-actions">
