@@ -263,6 +263,10 @@ body {
   font-size: 17px; color: var(--text-muted); line-height: 1.65;
   max-width: 520px; margin-bottom: 36px;
 }
+.hero-sub strong {
+  color: #1a0a0a;
+  font-weight: 600;
+}
 
 /* ── Search Bar ─────────────────────────────────────────────────────────── */
 .search-bar {
