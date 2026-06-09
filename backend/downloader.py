@@ -55,6 +55,7 @@ def _vfmt(h: int) -> str:
 
 QUALITY_OPTIONS: dict[str, dict] = {
     "1": {"name": "Best Quality (auto)", "format": _vfmt(0)},
+    "7": {"name": "4K (2160p)",          "format": _vfmt(2160)},
     "2": {"name": "1080p HD",           "format": _vfmt(1080)},
     "3": {"name": "720p HD",            "format": _vfmt(720)},
     "4": {"name": "480p",               "format": _vfmt(480)},
