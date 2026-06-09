@@ -1,4 +1,5 @@
 import threading
+from datetime import datetime, timedelta
 from pathlib import Path
 
 from flask import Blueprint, current_app, jsonify, request, send_file
@@ -30,6 +31,24 @@ def start():
         return jsonify(error="No URL provided."), 400
     if quality_key not in QUALITY_OPTIONS:
         return jsonify(error="Invalid quality option."), 400
+
+    # 3 downloads per 24 hours limit
+    since = datetime.utcnow() - timedelta(hours=24)
+    recent = Download.query.filter(
+        Download.user_id == current_user.id,
+        Download.date >= since,
+    ).all()
+    if len(recent) >= 3:
+        oldest = min(d.date for d in recent)
+        reset_at = oldest + timedelta(hours=24)
+        seconds_left = int((reset_at - datetime.utcnow()).total_seconds())
+        hours_left   = seconds_left // 3600
+        mins_left    = (seconds_left % 3600) // 60
+        return jsonify(
+            error="limit_reached",
+            hours=hours_left,
+            minutes=mins_left,
+        ), 429
 
     job_id = generate_job_id()
     create_job(

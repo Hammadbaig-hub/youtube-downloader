@@ -142,6 +142,13 @@ async function startDownload() {
       body: JSON.stringify({ url: url, quality: selectedKey, is_playlist: isPlaylist, playlist_count: playlistCount }),
     });
     var data = await res.json();
+    if (res.status === 429 && data.error === 'limit_reached') {
+      showLimitReached(data.hours, data.minutes);
+      setBtn(false);
+      var progCard = document.getElementById('prog-card');
+      if (progCard) progCard.classList.remove('show');
+      return;
+    }
     if (data.error) throw new Error(data.error);
     currentJobId = data.job_id;
     schedulePoll();
@@ -366,6 +373,45 @@ function clearHistory() {
   localStorage.removeItem(HISTORY_KEY);
   renderHistory();
   showToast('History cleared', 'info');
+}
+
+/* ── Daily limit modal ───────────────────────────────────────────────────── */
+function showLimitReached(hours, minutes) {
+  var existing = document.getElementById('limit-overlay');
+  if (existing) { existing.classList.add('show'); return; }
+
+  var timeStr = hours > 0
+    ? hours + 'h ' + minutes + 'm'
+    : minutes + ' minutes';
+
+  var overlay = document.createElement('div');
+  overlay.id = 'limit-overlay';
+  overlay.innerHTML =
+    '<div class="limit-box">' +
+      '<button class="signup-prompt-close" onclick="closeLimitOverlay()" aria-label="Close">' +
+        '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
+      '</button>' +
+      '<div class="limit-icon">' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>' +
+      '</div>' +
+      '<h3 class="limit-title">Daily limit reached</h3>' +
+      '<p class="limit-text">You\'ve used all <strong>3 free downloads</strong> for today.</p>' +
+      '<div class="limit-timer">Resets in <strong>' + timeStr + '</strong></div>' +
+      '<a href="/pricing" class="limit-upgrade-btn">Upgrade for more downloads</a>' +
+    '</div>';
+  overlay.addEventListener('click', function (e) {
+    if (e.target === overlay) closeLimitOverlay();
+  });
+  document.body.appendChild(overlay);
+  requestAnimationFrame(function () { overlay.classList.add('show'); });
+}
+
+function closeLimitOverlay() {
+  var overlay = document.getElementById('limit-overlay');
+  if (overlay) {
+    overlay.classList.remove('show');
+    setTimeout(function () { overlay.remove(); }, 300);
+  }
 }
 
 /* ── Signup prompt ────────────────────────────────────────────────────────── */
