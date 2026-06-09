@@ -46,11 +46,11 @@ body.auth-page {
   width: 40px;
   height: 40px;
   border-radius: 12px;
-  background: #c0392b;
+  background: #ff0000;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 0 0 5px rgba(155, 44, 44, 0.10);
+  box-shadow: 0 0 0 5px rgba(255, 0, 0, 0.10);
 }
 .login-logo-icon svg {
   width: 20px;
