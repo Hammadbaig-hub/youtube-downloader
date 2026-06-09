@@ -377,13 +377,16 @@ function showSignupPrompt() {
   overlay.id = 'signup-prompt-overlay';
   overlay.innerHTML =
     '<div class="signup-prompt-box">' +
-      '<div class="signup-prompt-icon">🔒</div>' +
-      '<h3 class="signup-prompt-title">Sign in to Download</h3>' +
-      '<p class="signup-prompt-text">Create a free account to start downloading videos from 1000+ sites.</p>' +
-      '<div class="signup-prompt-actions">' +
-        '<a href="/login" class="signup-prompt-btn-primary">Sign In / Sign Up</a>' +
-        '<button class="signup-prompt-btn-secondary" onclick="closeSignupPrompt()">Maybe Later</button>' +
+      '<button class="signup-prompt-close" onclick="closeSignupPrompt()" aria-label="Close">' +
+        '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
+      '</button>' +
+      '<div class="signup-prompt-logo">' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><path d="M3 5 Q7 15 12 18 Q17 15 21 5"/><path d="M12 18 L12 22 M9 22 L15 22"/></svg>' +
       '</div>' +
+      '<h3 class="signup-prompt-title">Sign in to continue</h3>' +
+      '<p class="signup-prompt-text">You need an account to download videos. It\'s free and takes 10 seconds.</p>' +
+      '<a href="/login" class="signup-prompt-btn-primary">Continue with Google</a>' +
+      '<p class="signup-prompt-note">Already have an account? <a href="/login">Sign in</a></p>' +
     '</div>';
   overlay.addEventListener('click', function (e) {
     if (e.target === overlay) closeSignupPrompt();
