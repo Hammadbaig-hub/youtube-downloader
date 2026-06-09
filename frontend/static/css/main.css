@@ -888,22 +888,45 @@ body {
 }
 
 /* ── Auth — Sign In button ──────────────────────────────────────────────── */
+@keyframes signinPulse {
+  0%   { box-shadow: 0 0 0 0 rgba(255,0,0,.45); }
+  70%  { box-shadow: 0 0 0 8px rgba(255,0,0,0); }
+  100% { box-shadow: 0 0 0 0 rgba(255,0,0,0); }
+}
+@keyframes signinShimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
 .nav-signin-btn {
   display: flex; align-items: center; gap: 7px;
-  padding: 8px 16px; border-radius: 10px;
-  border: 1px solid var(--accent);
-  color: var(--accent);
-  background: var(--accent-subtle);
+  padding: 9px 20px; border-radius: 99px;
+  border: none;
+  background: linear-gradient(90deg, #ff0000, #cc0000, #ff4444, #cc0000, #ff0000);
+  background-size: 300% auto;
+  color: #ffffff;
   font-size: 13px; font-weight: 700; font-family: inherit;
   text-decoration: none; white-space: nowrap;
-  transition: background .15s, box-shadow .15s, transform .1s;
+  box-shadow: 0 4px 14px rgba(255,0,0,.35);
+  animation: signinShimmer 3s linear infinite;
+  transition: transform .2s, box-shadow .2s;
+  position: relative; overflow: hidden;
+}
+.nav-signin-btn::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(120deg, transparent 30%, rgba(255,255,255,.22) 50%, transparent 70%);
+  background-size: 200% auto;
+  animation: signinShimmer 2s linear infinite;
+  border-radius: inherit;
 }
 .nav-signin-btn:hover {
-  background: rgba(255,0,0,.18);
-  box-shadow: 0 0 0 3px var(--accent-glow);
+  transform: translateY(-2px) scale(1.04);
+  box-shadow: 0 6px 22px rgba(255,0,0,.5);
+  animation: signinPulse .7s ease-out, signinShimmer 3s linear infinite;
 }
-.nav-signin-btn:active { transform: scale(.97); }
-.nav-signin-btn svg { width: 15px; height: 15px; }
+.nav-signin-btn:active { transform: scale(.96); }
+.nav-signin-btn svg { width: 15px; height: 15px; position: relative; z-index: 1; }
+.nav-signin-btn span { position: relative; z-index: 1; }
 
 /* ── Auth — User avatar button ───────────────────────────────────────────── */
 .nav-user { position: relative; }
