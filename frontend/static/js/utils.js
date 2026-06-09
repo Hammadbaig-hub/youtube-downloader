@@ -9,6 +9,14 @@ var currentTheme   = 'dark';
 var detectedInfo   = null;
 var infoDebounce   = null;
 
+/* ── CSRF-aware fetch ─────────────────────────────────────────────────────── */
+function csrfFetch(url, options) {
+  options = options || {};
+  options.headers = options.headers || {};
+  options.headers['X-CSRFToken'] = window.CSRF_TOKEN || '';
+  return fetch(url, options);
+}
+
 /* ── Toast ────────────────────────────────────────────────────────────────── */
 function showToast(message, type) {
   type = type || 'success';

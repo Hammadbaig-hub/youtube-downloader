@@ -4,6 +4,7 @@ from pathlib import Path
 from flask import Flask
 from flask_cors import CORS
 from flask_login import LoginManager
+from flask_wtf.csrf import CSRFProtect
 
 sys.path.insert(0, str(Path(__file__).parent))
 
@@ -15,6 +16,7 @@ from routes.auth import auth_bp, init_oauth
 from routes.admin import admin_bp
 
 login_manager = LoginManager()
+csrf = CSRFProtect()
 
 
 def create_app(config_name: str = "default") -> Flask:
@@ -26,6 +28,8 @@ def create_app(config_name: str = "default") -> Flask:
     app.config.from_object(config_map[config_name])
 
     CORS(app)
+    csrf.init_app(app)
+    csrf.exempt(auth_bp)   # Google OAuth redirects don't carry CSRF tokens
     db.init_app(app)
 
     login_manager.init_app(app)

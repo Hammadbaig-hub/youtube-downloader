@@ -122,7 +122,7 @@ async function saveSettings() {
   var note  = document.getElementById('save-note');
   if (note) note.textContent = '';
   try {
-    var res  = await fetch('/config', {
+    var res  = await csrfFetch('/config', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ theme: currentTheme, default_quality: cfgKey, download_dir: dir }),

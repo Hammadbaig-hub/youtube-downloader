@@ -26,7 +26,7 @@ function hideInfo() {
 
 async function detectInfo(url) {
   try {
-    var res  = await fetch('/info', {
+    var res  = await csrfFetch('/info', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ url: url }),
@@ -136,7 +136,7 @@ async function startDownload() {
   setBtn(true);
 
   try {
-    var res  = await fetch('/start', {
+    var res  = await csrfFetch('/start', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ url: url, quality: selectedKey, is_playlist: isPlaylist, playlist_count: playlistCount }),
