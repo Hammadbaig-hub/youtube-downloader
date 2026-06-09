@@ -964,45 +964,117 @@ body {
 }
 
 /* ── Responsive ─────────────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .features-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
 @media (max-width: 700px) {
+  /* Disable reveal animations — show all content immediately on mobile */
+  .reveal, .reveal.visible {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+
+  /* ── Navbar ── */
   .nav-links { display: none; flex-direction: column; gap: 0; }
   .nav-links.open {
     display: flex;
     position: absolute; top: 64px; left: 0; right: 0;
-    background: var(--nav-bg); backdrop-filter: blur(16px);
+    background: rgba(250,247,242,.97); backdrop-filter: blur(16px);
     border-bottom: 1px solid var(--border);
-    padding: 12px 0;
+    padding: 8px 0; z-index: 99;
   }
   .nav-links.open a {
-    padding: 12px 24px; font-size: 15px;
-    border-bottom: 1px solid var(--border);
+    padding: 14px 24px; font-size: 15px;
+    border-bottom: 1px solid rgba(0,0,0,.06);
   }
   .nav-links.open a:last-child { border-bottom: none; }
   .hamburger { display: flex; }
+  .nav-signin-btn span { display: none; }
+  .nav-signin-btn { padding: 9px 14px; gap: 0; }
 
-  .hero-title { font-size: 36px; letter-spacing: -1px; }
-  .hero-sub   { font-size: 15px; }
-  .search-bar { flex-wrap: wrap; gap: 8px; padding: 10px; }
+  /* ── Hero ── */
+  .hero {
+    min-height: auto;
+    padding: 90px 20px 36px;
+  }
+  .hero-badge { font-size: 11px; padding: 5px 12px; margin-bottom: 18px; }
+  .hero-title { font-size: 32px; letter-spacing: -.5px; margin-bottom: 14px; }
+  .hero-sub   { font-size: 14px; margin-bottom: 24px; }
+
+  /* ── Search bar ── */
+  .search-bar {
+    flex-direction: column; gap: 8px;
+    padding: 10px; border-radius: 14px;
+    margin-bottom: 20px;
+  }
   .search-icon { display: none; }
-  .search-input { width: 100%; padding: 8px 0; }
-  .search-btn { width: 100%; justify-content: center; }
+  .search-input { width: 100%; padding: 8px 6px; font-size: 14px; }
+  .search-btn   { width: 100%; justify-content: center; border-radius: 10px; padding: 13px; }
 
-  .trust-row { gap: 12px; }
+  /* ── Trust row ── */
+  .trust-row { gap: 10px; }
   .trust-sep { display: none; }
+  .trust-item { font-size: 12px; }
 
-  .features-grid { grid-template-columns: 1fr; }
+  /* ── Platforms strip ── */
+  .platforms-strip { gap: 6px; margin-top: 14px; }
+  .platform-chip   { font-size: 12px; padding: 5px 10px; }
 
+  /* ── Controls / Quality ── */
+  .controls-section { padding: 0 16px 28px; }
+  .quality-card { padding: 16px; }
+  .quality-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .q-pill { padding: 10px 6px; font-size: 12px; }
+
+  /* ── Section headings ── */
+  .section-tag { font-size: 13px; }
+  .section-heading { font-size: 24px; }
+  .section-sub { font-size: 14px; }
+
+  /* ── Features ── */
+  .features-section { padding: 40px 16px; }
+  .features-grid { grid-template-columns: 1fr; gap: 12px; }
+  .feature-card { padding: 20px; }
+
+  /* ── FAQ ── */
+  .faq-section { padding: 40px 16px; }
+  .faq-q { font-size: 14px; padding: 16px; }
+  .faq-a p { font-size: 13px; }
+
+  /* ── Stats ── */
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .stat-box { padding: 14px; }
 
+  /* ── History ── */
+  .history-section { padding: 40px 16px; }
+  .history-header { flex-direction: column; gap: 12px; align-items: flex-start; }
   .history-table th:nth-child(2),
   .history-table td:nth-child(2) { display: none; }
+  .history-table { font-size: 13px; }
+  .history-table th, .history-table td { padding: 10px 12px; }
 
-  .modal { padding: 20px; }
+  /* ── Modal ── */
+  .modal { padding: 20px; border-radius: 16px; }
   .modal-quality-grid { grid-template-columns: repeat(2, 1fr); }
+
+  /* ── Progress card ── */
+  .prog-card-inner { padding: 16px; }
+  .stats-row { flex-wrap: wrap; gap: 8px; }
+  .stat-item { min-width: 80px; }
+
+  /* ── Footer ── */
+  .footer { padding: 12px 16px; }
+  .footer-logo { font-size: 13px; }
+  .footer-copy { font-size: 12px; }
 }
 
-@media (max-width: 900px) {
-  .features-grid { grid-template-columns: repeat(2, 1fr); }
+@media (max-width: 400px) {
+  .hero-title { font-size: 28px; }
+  .quality-grid { grid-template-columns: repeat(2, 1fr); }
+  .nav-logo { font-size: 15px; }
+  .search-btn { font-size: 13px; }
 }
 
 /* ── Auth — Sign In button ──────────────────────────────────────────────── */

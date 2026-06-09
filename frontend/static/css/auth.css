@@ -160,6 +160,15 @@ body.auth-page {
 }
 .guest-btn svg { width: 16px; height: 16px; }
 
+/* ── Mobile ── */
+@media (max-width: 480px) {
+  body.auth-page { padding: 16px; align-items: flex-start; padding-top: 40px; }
+  .login-card { padding: 28px 20px; border-radius: 16px; }
+  .login-title { font-size: 20px; }
+  .login-sub { font-size: 13px; margin-bottom: 22px; }
+  .google-btn { font-size: 14px; height: 48px; }
+}
+
 /* ── Footer trust note ── */
 .login-footer {
   display: flex;

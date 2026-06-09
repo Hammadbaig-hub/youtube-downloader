@@ -360,17 +360,24 @@
       .pricing-grid { grid-template-columns: 1fr; max-width: 440px; }
       .price-card.highlighted { padding-top: 48px; }
     }
-    @media (max-width: 600px) {
-      .pricing-hero { padding: 56px 20px 36px; }
-      .pricing-hero h1 { font-size: 30px; }
-      .price-card { padding: 28px 24px; }
+    @media (max-width: 700px) {
+      .pricing-page { padding-top: 64px; }
+      .pricing-hero { padding: 36px 16px 28px; }
+      .pricing-hero h1 { font-size: 26px; letter-spacing: -.02em; }
+      .pricing-hero p  { font-size: 14px; }
+      .pricing-hero-tag { font-size: 12px; }
+      .pricing-section { padding: 0 16px 48px; }
+      .price-card { padding: 22px 18px !important; }
+      .price-amount { font-size: 36px; }
+      .comparison-section { padding: 0 16px 60px; }
+      .comparison-heading h2 { font-size: 22px; }
       .comp-table thead th,
-      .comp-table td { padding: 14px 14px; font-size: 13px; }
+      .comp-table td { padding: 12px 10px; font-size: 12px; }
     }
-    @media (max-width: 480px) {
-      .comp-table { font-size: 12px; }
+    @media (max-width: 400px) {
+      .pricing-hero h1 { font-size: 22px; }
       .comp-table thead th,
-      .comp-table td { padding: 12px 10px; }
+      .comp-table td { padding: 10px 8px; font-size: 11px; }
     }
   </style>
 </head>
