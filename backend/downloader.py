@@ -58,6 +58,7 @@ def _vfmt(h: int) -> str:
         f"/bestvideo{cap}+bestaudio[ext=m4a]"
         f"/bestvideo{cap}+bestaudio"
         f"/best{cap}[ext=mp4]/best{cap}"
+        f"/best"  # source may not offer the requested resolution at all
     )
 
 
@@ -65,7 +66,7 @@ def _vfmt_single(h: int) -> str:
     """Format string for Vercel (no ffmpeg — single pre-merged stream only)."""
     cap = f"[height<={h}]" if h else ""
     # `best` selects the best pre-merged single-file format (no ffmpeg needed)
-    return f"best{cap}[ext=mp4]/best{cap}[ext=webm]/best{cap}"
+    return f"best{cap}[ext=mp4]/best{cap}[ext=webm]/best{cap}/best"
 
 
 QUALITY_OPTIONS: dict[str, dict] = {
