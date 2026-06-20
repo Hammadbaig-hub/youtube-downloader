@@ -227,7 +227,7 @@ def _worker(app, job_id: str, url: str, quality_key: str, is_playlist: bool) -> 
             downloaded = d.get("downloaded_bytes") or 0
             total = d.get("total_bytes") or d.get("total_bytes_estimate") or 0
             speed = d.get("speed") or 0
-            eta = d.get("eta") or 0
+            eta = int(d.get("eta") or 0)
             title = info.get("title", "")
             pct_video = min(downloaded / total * 100, 100) if total else 0
 
