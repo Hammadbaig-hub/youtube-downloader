@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="{{ theme }}">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Terms of Service — VidFlow</title>
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='assets/favicon.svg') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    .legal-page { padding-top: 64px; }
+    .legal-hero {
+      text-align: center;
+      padding: 64px 24px 40px;
+      border-bottom: 1px solid #f0e6d3;
+    }
+    .legal-hero h1 { font-size: clamp(28px, 4vw, 42px); font-weight: 800; color: #1a0a0a; margin-bottom: 10px; }
+    .legal-hero p  { font-size: 15px; color: #9a8070; }
+    .legal-body {
+      max-width: 760px; margin: 0 auto;
+      padding: 48px 24px 80px;
+    }
+    .legal-body h2 {
+      font-size: 18px; font-weight: 700; color: #1a0a0a;
+      margin: 36px 0 12px; padding-bottom: 8px;
+      border-bottom: 1px solid #f0e6d3;
+    }
+    .legal-body h2:first-child { margin-top: 0; }
+    .legal-body p, .legal-body li {
+      font-size: 14.5px; color: #4a3020; line-height: 1.75;
+    }
+    .legal-body ul { padding-left: 20px; margin: 10px 0; }
+    .legal-body li { margin-bottom: 6px; }
+    .legal-body a  { color: #ff0000; text-decoration: none; }
+    .legal-body a:hover { text-decoration: underline; }
+    .legal-date {
+      display: inline-block;
+      background: rgba(255,0,0,.07);
+      border: 1px solid rgba(255,0,0,.15);
+      color: #cc0000; font-size: 13px; font-weight: 600;
+      padding: 5px 14px; border-radius: 99px; margin-bottom: 32px;
+    }
+    @media (max-width: 700px) {
+      .legal-hero { padding: 48px 16px 28px; }
+      .legal-body  { padding: 32px 16px 60px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="navbar" id="navbar">
+  <div class="nav-inner">
+    <a class="nav-logo" href="/">
+      <div class="nav-logo-icon">
+        <svg viewBox="0 0 24 24"><path d="M3 5 Q7 15 12 18 Q17 15 21 5"/><path d="M12 18 L12 22 M9 22 L15 22"/></svg>
+      </div>
+      VidFlow
+    </a>
+    <div class="nav-links">
+      <a href="/">Home</a>
+      <a href="/pricing">Pricing</a>
+    </div>
+    <div class="nav-actions">
+      {% if current_user.is_authenticated %}
+      <a href="/account" class="nav-signin-btn"><i data-lucide="user"></i><span>Account</span></a>
+      {% else %}
+      <a href="/login" class="nav-signin-btn"><i data-lucide="log-in"></i><span>Sign In</span></a>
+      {% endif %}
+    </div>
+  </div>
+</nav>
+
+<main class="legal-page">
+  <div class="legal-hero">
+    <div class="legal-date">Last updated: June 2026</div>
+    <h1>Terms of Service</h1>
+    <p>Please read these terms carefully before using VidFlow.</p>
+  </div>
+
+  <div class="legal-body">
+
+    <h2>1. Acceptance of Terms</h2>
+    <p>By accessing or using VidFlow ("the Service"), you agree to be bound by these Terms of Service. If you do not agree to these terms, do not use the Service.</p>
+
+    <h2>2. Description of Service</h2>
+    <p>VidFlow is a personal video downloading tool that allows users to download publicly available video content for personal, non-commercial use. The Service is intended solely for downloading content that you have the legal right to download.</p>
+
+    <h2>3. Permitted Use</h2>
+    <p>You may use VidFlow only for lawful purposes. You agree to download content only when:</p>
+    <ul>
+      <li>You own the content, or</li>
+      <li>The content is licensed under a Creative Commons or similar open license, or</li>
+      <li>You have explicit permission from the copyright holder, or</li>
+      <li>Downloading is permitted under applicable law (e.g., personal backup of content you own)</li>
+    </ul>
+
+    <h2>4. Prohibited Use</h2>
+    <p>You must NOT use VidFlow to:</p>
+    <ul>
+      <li>Download copyrighted content without authorization</li>
+      <li>Redistribute, sell, or commercially exploit downloaded content</li>
+      <li>Circumvent DRM (Digital Rights Management) protections</li>
+      <li>Download private, confidential, or restricted content</li>
+      <li>Use the Service in any way that violates applicable laws</li>
+      <li>Attempt to overload, hack, or disrupt the Service</li>
+    </ul>
+
+    <h2>5. User Accounts</h2>
+    <p>You are responsible for maintaining the security of your account. You must not share your account credentials with others. VidFlow reserves the right to suspend accounts that violate these terms.</p>
+
+    <h2>6. Download Limits</h2>
+    <p>Free accounts are limited to 3 downloads per 24-hour period. Paid plans provide higher limits as described on the <a href="/pricing">Pricing page</a>. Limits may be adjusted at our discretion.</p>
+
+    <h2>7. Disclaimer of Warranties</h2>
+    <p>VidFlow is provided "as is" without warranty of any kind. We do not guarantee that the Service will be available at all times, error-free, or that downloaded content will meet your expectations. Platform updates may occasionally affect download functionality.</p>
+
+    <h2>8. Limitation of Liability</h2>
+    <p>VidFlow and its operators shall not be liable for any indirect, incidental, special, or consequential damages arising from your use of the Service, including but not limited to damages for loss of data or profits.</p>
+
+    <h2>9. Intellectual Property</h2>
+    <p>You are solely responsible for ensuring that your use of downloaded content complies with applicable copyright laws. VidFlow does not host, store, or distribute any downloaded media — all downloads go directly to your device.</p>
+
+    <h2>10. Changes to Terms</h2>
+    <p>We reserve the right to modify these Terms at any time. Continued use of the Service after changes constitutes acceptance of the new Terms.</p>
+
+    <h2>11. Contact</h2>
+    <p>For questions about these Terms, contact us at <a href="/contact">our contact page</a> or refer to our <a href="/privacy">Privacy Policy</a>.</p>
+
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-logo">
+      <div class="nav-logo-icon small">
+        <svg viewBox="0 0 24 24"><path d="M3 5 Q7 15 12 18 Q17 15 21 5"/><path d="M12 18 L12 22 M9 22 L15 22"/></svg>
+      </div>
+      VidFlow
+    </div>
+    <p class="footer-copy">Copyright &copy; 2026 VidFlow. All rights reserved.</p>
+    <p class="footer-links">
+      <a href="/tos">Terms</a>
+      <a href="/privacy">Privacy</a>
+      <a href="/pricing">Pricing</a>
+    </p>
+  </div>
+</footer>
+
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script>if (typeof lucide !== 'undefined') lucide.createIcons();</script>
+</body>
+</html>

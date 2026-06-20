@@ -151,7 +151,20 @@ async function startDownload() {
     }
     if (data.error) throw new Error(data.error);
     currentJobId = data.job_id;
-    schedulePoll();
+    // Vercel: /start completes synchronously and returns the final status directly
+    if (data.status === 'done' || data.status === 'error') {
+      applyUpdate({
+        status: data.status,
+        title: data.title || '',
+        error: data.error || '',
+        is_playlist: isPlaylist,
+        percent: data.status === 'done' ? 100 : 0,
+        overall_percent: data.status === 'done' ? 100 : 0,
+        files: [],
+      });
+    } else {
+      schedulePoll();
+    }
   } catch (err) {
     showError(err.message);
     setBtn(false);
@@ -231,6 +244,7 @@ function applyUpdate(d) {
     var title = (detectedInfo && detectedInfo.title) ? detectedInfo.title : (d.title || 'Unknown');
     saveToHistory(title, qName);
     showToast('Download complete!', 'success');
+    sendBrowserNotification(title);
 
     if (!isPlaylist) triggerDownload(currentJobId);
 
@@ -373,6 +387,26 @@ function clearHistory() {
   localStorage.removeItem(HISTORY_KEY);
   renderHistory();
   showToast('History cleared', 'info');
+}
+
+/* ── Browser notifications ───────────────────────────────────────────────── */
+function sendBrowserNotification(title) {
+  if (!('Notification' in window)) return;
+  if (Notification.permission === 'granted') {
+    new Notification('VidFlow — Download Complete', {
+      body: title || 'Your download is ready.',
+      icon: '/static/assets/favicon.svg',
+    });
+  } else if (Notification.permission === 'default') {
+    Notification.requestPermission().then(function (perm) {
+      if (perm === 'granted') {
+        new Notification('VidFlow — Download Complete', {
+          body: title || 'Your download is ready.',
+          icon: '/static/assets/favicon.svg',
+        });
+      }
+    });
+  }
 }
 
 /* ── Daily limit modal ───────────────────────────────────────────────────── */

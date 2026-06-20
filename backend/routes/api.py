@@ -2,17 +2,34 @@ import threading
 from datetime import datetime, timedelta
 from pathlib import Path
 
-from flask import Blueprint, current_app, jsonify, request, send_file
+from flask import Blueprint, current_app, jsonify, redirect, request, send_file
 from flask_login import current_user, login_required
 
 import config as _config
 from downloader import QUALITY_OPTIONS, VideoDownloader
-from models import Download, db
+from models import Download, DownloadJob, db
 from utils.platform_detector import detect_platform, extract_url
 from utils.progress_tracker import create_job, generate_job_id, get_job, update_job
 from utils.error_handler import classify_error
 
 api_bp = Blueprint("api", __name__)
+
+
+def _rate_limit_check(user_id: int):
+    """Returns (ok, error_response) tuple. error_response is None if within limit."""
+    since = datetime.utcnow() - timedelta(hours=24)
+    recent = Download.query.filter(
+        Download.user_id == user_id,
+        Download.date >= since,
+    ).all()
+    if len(recent) >= 3:
+        oldest = min(d.date for d in recent)
+        reset_at = oldest + timedelta(hours=24)
+        seconds_left = int((reset_at - datetime.utcnow()).total_seconds())
+        hours_left = seconds_left // 3600
+        mins_left  = (seconds_left % 3600) // 60
+        return False, jsonify(error="limit_reached", hours=hours_left, minutes=mins_left), 429
+    return True, None, None
 
 
 @api_bp.route("/start", methods=["POST"])
@@ -32,25 +49,58 @@ def start():
     if quality_key not in QUALITY_OPTIONS:
         return jsonify(error="Invalid quality option."), 400
 
-    # 3 downloads per 24 hours limit
-    since = datetime.utcnow() - timedelta(hours=24)
-    recent = Download.query.filter(
-        Download.user_id == current_user.id,
-        Download.date >= since,
-    ).all()
-    if len(recent) >= 3:
-        oldest = min(d.date for d in recent)
-        reset_at = oldest + timedelta(hours=24)
-        seconds_left = int((reset_at - datetime.utcnow()).total_seconds())
-        hours_left   = seconds_left // 3600
-        mins_left    = (seconds_left % 3600) // 60
-        return jsonify(
-            error="limit_reached",
-            hours=hours_left,
-            minutes=mins_left,
-        ), 429
+    ok, err_resp, err_code = _rate_limit_check(user_id)
+    if not ok:
+        return err_resp, err_code
 
     job_id = generate_job_id()
+
+    if _config.IS_VERCEL:
+        # ── Vercel: synchronous URL extraction, state in DB ───────────────────
+        try:
+            dl = VideoDownloader()
+            result = dl.get_direct_url(url, quality_key)
+
+            job = DownloadJob(
+                job_id=job_id,
+                user_id=user_id,
+                status="done",
+                title=result["title"],
+                direct_url=result["url"],
+                filename=result["filename"],
+                quality=QUALITY_OPTIONS.get(quality_key, {}).get("name", ""),
+                is_playlist=False,
+            )
+            db.session.add(job)
+
+            rec = Download(
+                user_id=user_id,
+                title=result["title"],
+                platform=detect_platform(url),
+                quality=QUALITY_OPTIONS.get(quality_key, {}).get("name", ""),
+                file_size="",
+            )
+            db.session.add(rec)
+            db.session.commit()
+
+            return jsonify(job_id=job_id, status="done", title=result["title"])
+
+        except Exception as exc:
+            error_msg = classify_error(exc)
+            try:
+                job = DownloadJob(
+                    job_id=job_id,
+                    user_id=user_id,
+                    status="error",
+                    error=error_msg,
+                )
+                db.session.add(job)
+                db.session.commit()
+            except Exception:
+                pass
+            return jsonify(job_id=job_id, status="error", error=error_msg)
+
+    # ── Local dev: background thread, in-memory state ────────────────────────
     create_job(
         job_id,
         status="starting",
@@ -84,6 +134,21 @@ def start():
 
 @api_bp.route("/progress/<job_id>")
 def progress(job_id):
+    if _config.IS_VERCEL:
+        job = DownloadJob.query.filter_by(job_id=job_id).first()
+        if not job:
+            return jsonify(error="Job not found."), 404
+        return jsonify(
+            status=job.status,
+            title=job.title or "",
+            error=job.error,
+            is_playlist=False,
+            percent=100 if job.status == "done" else 0,
+            overall_percent=100 if job.status == "done" else 0,
+            filename=job.filename,
+            files=[],
+        )
+
     job = get_job(job_id)
     if not job:
         return jsonify(error="Job not found."), 404
@@ -93,6 +158,14 @@ def progress(job_id):
 
 @api_bp.route("/download/<job_id>")
 def download_file(job_id):
+    if _config.IS_VERCEL:
+        job = DownloadJob.query.filter_by(job_id=job_id).first()
+        if not job or job.status != "done":
+            return jsonify(error="File not ready."), 404
+        if not job.direct_url:
+            return jsonify(error="No download URL available."), 404
+        return redirect(job.direct_url)
+
     job = get_job(job_id)
     if not job or job.get("status") != "done":
         return jsonify(error="File not ready yet."), 404
@@ -127,9 +200,7 @@ def api_history():
 @api_bp.route("/api/history/<int:record_id>", methods=["DELETE"])
 @login_required
 def delete_history_record(record_id):
-    record = Download.query.filter_by(
-        id=record_id, user_id=current_user.id
-    ).first()
+    record = Download.query.filter_by(id=record_id, user_id=current_user.id).first()
     if not record:
         return jsonify(error="Not found"), 404
     db.session.delete(record)
@@ -137,7 +208,7 @@ def delete_history_record(record_id):
     return jsonify(ok=True)
 
 
-# ── Background worker ─────────────────────────────────────────────────────────
+# ── Background worker (local dev only) ───────────────────────────────────────
 
 def _worker(app, job_id: str, url: str, quality_key: str, is_playlist: bool) -> None:
     last_pl_index = [0]

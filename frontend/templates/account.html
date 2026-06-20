@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="{{ theme }}">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Account — VidFlow</title>
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='assets/favicon.svg') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    .account-page { padding-top: 64px; min-height: 100vh; }
+    .account-inner { max-width: 820px; margin: 0 auto; padding: 48px 24px 80px; }
+
+    /* Profile card */
+    .profile-card {
+      background: #ffffff; border: 1px solid #f0e6d3;
+      border-radius: 20px; padding: 32px;
+      display: flex; align-items: center; gap: 24px;
+      margin-bottom: 28px;
+      box-shadow: 0 4px 16px rgba(0,0,0,.05);
+    }
+    .profile-avatar {
+      width: 72px; height: 72px; border-radius: 50%;
+      object-fit: cover; flex-shrink: 0;
+      border: 3px solid rgba(255,0,0,.15);
+    }
+    .profile-avatar-fallback {
+      width: 72px; height: 72px; border-radius: 50%;
+      background: #ff0000; color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 28px; font-weight: 700; flex-shrink: 0;
+    }
+    .profile-info { flex: 1; min-width: 0; }
+    .profile-name  { font-size: 20px; font-weight: 700; color: #1a0a0a; margin-bottom: 4px; }
+    .profile-email { font-size: 14px; color: #9a8070; }
+    .profile-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(255,0,0,.08); border: 1px solid rgba(255,0,0,.18);
+      color: #ff0000; font-size: 12px; font-weight: 700;
+      padding: 4px 12px; border-radius: 99px; margin-top: 8px;
+      text-transform: uppercase; letter-spacing: .04em;
+    }
+    .profile-actions { display: flex; flex-direction: column; gap: 8px; align-items: flex-end; }
+    .btn-signout {
+      display: flex; align-items: center; gap: 6px;
+      padding: 9px 18px; border-radius: 10px;
+      border: 1px solid #f0e6d3; background: transparent;
+      color: #9a8070; font-size: 13px; font-weight: 600;
+      font-family: inherit; cursor: pointer; text-decoration: none;
+      transition: border-color .2s, color .2s;
+    }
+    .btn-signout:hover { border-color: #ff0000; color: #cc0000; }
+    .btn-signout svg { width: 14px; height: 14px; }
+
+    /* Stats row */
+    .account-stats {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 16px; margin-bottom: 28px;
+    }
+    .account-stat {
+      background: #ffffff; border: 1px solid #f0e6d3;
+      border-radius: 16px; padding: 22px 20px;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,.04);
+    }
+    .account-stat-num   { font-size: 32px; font-weight: 800; color: #ff0000; line-height: 1; margin-bottom: 6px; }
+    .account-stat-label { font-size: 13px; color: #9a8070; font-weight: 500; }
+
+    /* Quota bar */
+    .quota-card {
+      background: #ffffff; border: 1px solid #f0e6d3;
+      border-radius: 16px; padding: 24px 28px;
+      margin-bottom: 28px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.04);
+    }
+    .quota-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 12px;
+    }
+    .quota-label { font-size: 14px; font-weight: 600; color: #1a0a0a; }
+    .quota-count { font-size: 13px; color: #9a8070; }
+    .quota-bar-wrap {
+      height: 8px; background: #f5ede0;
+      border-radius: 99px; overflow: hidden;
+    }
+    .quota-bar-fill {
+      height: 100%; background: #ff0000;
+      border-radius: 99px;
+      transition: width .4s ease;
+    }
+    .quota-reset { font-size: 12px; color: #9a8070; margin-top: 8px; }
+    .quota-upgrade {
+      display: inline-flex; align-items: center; gap: 6px;
+      margin-top: 14px; padding: 9px 18px;
+      background: #ff0000; color: #fff;
+      font-size: 13px; font-weight: 600;
+      border-radius: 10px; text-decoration: none;
+      box-shadow: 0 2px 8px rgba(255,0,0,.25);
+      transition: background .2s;
+    }
+    .quota-upgrade:hover { background: #cc0000; }
+
+    /* History table */
+    .history-card {
+      background: #ffffff; border: 1px solid #f0e6d3;
+      border-radius: 16px; overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,.04);
+    }
+    .history-card-header {
+      padding: 20px 24px; border-bottom: 1px solid #f0e6d3;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .history-card-header h3 { font-size: 16px; font-weight: 700; color: #1a0a0a; margin: 0; }
+    .history-card-header a  { font-size: 13px; color: #ff0000; text-decoration: none; }
+    .history-card-header a:hover { text-decoration: underline; }
+    .history-empty-state {
+      padding: 48px 24px; text-align: center;
+      color: #9a8070; font-size: 14px;
+    }
+    .history-empty-state svg { width: 36px; height: 36px; margin-bottom: 12px; color: #d0b090; display: block; margin: 0 auto 12px; }
+    .account-table { width: 100%; border-collapse: collapse; }
+    .account-table th {
+      padding: 12px 20px; font-size: 11px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .06em; color: #9a8070;
+      background: #faf7f2; border-bottom: 1px solid #f0e6d3;
+      text-align: left;
+    }
+    .account-table td {
+      padding: 14px 20px; font-size: 13.5px; color: #4a3020;
+      border-bottom: 1px solid #f5ede0;
+    }
+    .account-table tr:last-child td { border-bottom: none; }
+    .account-table tr:hover td { background: #fdf9f5; }
+    .td-title {
+      max-width: 280px; overflow: hidden;
+      text-overflow: ellipsis; white-space: nowrap;
+      font-weight: 500; color: #1a0a0a;
+    }
+    .td-platform {
+      display: inline-flex; align-items: center;
+      background: rgba(255,0,0,.07); color: #cc0000;
+      padding: 2px 10px; border-radius: 99px;
+      font-size: 12px; font-weight: 600;
+    }
+    .td-quality { color: #9a8070; font-size: 12px; }
+    .td-date    { color: #9a8070; font-size: 12px; white-space: nowrap; }
+
+    @media (max-width: 700px) {
+      .account-inner { padding: 28px 16px 60px; }
+      .profile-card  { flex-direction: column; text-align: center; gap: 16px; }
+      .profile-actions { align-items: center; }
+      .account-stats { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+      .account-stat  { padding: 16px 10px; }
+      .account-stat-num { font-size: 24px; }
+      .account-table th:nth-child(3),
+      .account-table td:nth-child(3) { display: none; }
+    }
+    @media (max-width: 480px) {
+      .account-stats { grid-template-columns: repeat(3, 1fr); }
+      .account-stat-num { font-size: 20px; }
+      .account-table th:nth-child(2),
+      .account-table td:nth-child(2) { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="navbar" id="navbar">
+  <div class="nav-inner">
+    <a class="nav-logo" href="/">
+      <div class="nav-logo-icon">
+        <svg viewBox="0 0 24 24"><path d="M3 5 Q7 15 12 18 Q17 15 21 5"/><path d="M12 18 L12 22 M9 22 L15 22"/></svg>
+      </div>
+      VidFlow
+    </a>
+    <div class="nav-links">
+      <a href="/">Home</a>
+      <a href="/pricing">Pricing</a>
+    </div>
+    <div class="nav-actions">
+      <a href="/account" class="nav-signin-btn active"><i data-lucide="user"></i><span>Account</span></a>
+    </div>
+  </div>
+</nav>
+
+<main class="account-page">
+  <div class="account-inner">
+
+    <!-- Profile -->
+    <div class="profile-card">
+      {% if current_user.avatar %}
+      <img src="{{ current_user.avatar }}" class="profile-avatar" alt="{{ current_user.name }}" onerror="this.style.display='none'">
+      {% else %}
+      <div class="profile-avatar-fallback">{{ (current_user.name or 'U')[0].upper() }}</div>
+      {% endif %}
+      <div class="profile-info">
+        <div class="profile-name">{{ current_user.name or 'User' }}</div>
+        <div class="profile-email">{{ current_user.email }}</div>
+        <div class="profile-badge"><i data-lucide="shield"></i> Free Plan</div>
+      </div>
+      <div class="profile-actions">
+        <a href="/logout" class="btn-signout"><i data-lucide="log-out"></i> Sign Out</a>
+      </div>
+    </div>
+
+    <!-- Usage stats -->
+    <div class="account-stats">
+      <div class="account-stat">
+        <div class="account-stat-num">{{ stats.total }}</div>
+        <div class="account-stat-label">Total Downloads</div>
+      </div>
+      <div class="account-stat">
+        <div class="account-stat-num">{{ stats.this_month }}</div>
+        <div class="account-stat-label">This Month</div>
+      </div>
+      <div class="account-stat">
+        <div class="account-stat-num">{{ stats.platforms }}</div>
+        <div class="account-stat-label">Platforms</div>
+      </div>
+    </div>
+
+    <!-- Daily quota -->
+    <div class="quota-card">
+      <div class="quota-header">
+        <span class="quota-label">Daily Download Quota</span>
+        <span class="quota-count">{{ stats.today }}/3 used today</span>
+      </div>
+      <div class="quota-bar-wrap">
+        <div class="quota-bar-fill" style="width: {{ [stats.today * 33.33, 100] | min }}%"></div>
+      </div>
+      <div class="quota-reset">
+        {% if stats.reset_in %}
+        Resets in {{ stats.reset_in }}
+        {% else %}
+        Quota resets every 24 hours
+        {% endif %}
+      </div>
+      {% if stats.today >= 3 %}
+      <a href="/pricing" class="quota-upgrade"><i data-lucide="zap"></i> Upgrade for more downloads</a>
+      {% endif %}
+    </div>
+
+    <!-- Download history -->
+    <div class="history-card">
+      <div class="history-card-header">
+        <h3>Recent Downloads</h3>
+        <a href="/#history">View all</a>
+      </div>
+      {% if history %}
+      <table class="account-table">
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Platform</th>
+            <th>Quality</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in history %}
+          <tr>
+            <td class="td-title" title="{{ item.title }}">{{ item.title or 'Unknown' }}</td>
+            <td><span class="td-platform">{{ item.platform or '—' }}</span></td>
+            <td class="td-quality">{{ item.quality or '—' }}</td>
+            <td class="td-date">{{ item.date.strftime('%b %d, %Y') }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="history-empty-state">
+        <i data-lucide="download" style="width:36px;height:36px;color:#d0b090;display:block;margin:0 auto 12px;"></i>
+        <p>No downloads yet. <a href="/" style="color:#ff0000">Start downloading</a></p>
+      </div>
+      {% endif %}
+    </div>
+
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-logo">
+      <div class="nav-logo-icon small">
+        <svg viewBox="0 0 24 24"><path d="M3 5 Q7 15 12 18 Q17 15 21 5"/><path d="M12 18 L12 22 M9 22 L15 22"/></svg>
+      </div>
+      VidFlow
+    </div>
+    <p class="footer-copy">Copyright &copy; 2026 VidFlow. All rights reserved.</p>
+    <p class="footer-links">
+      <a href="/tos">Terms</a>
+      <a href="/privacy">Privacy</a>
+      <a href="/pricing">Pricing</a>
+    </p>
+  </div>
+</footer>
+
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script>if (typeof lucide !== 'undefined') lucide.createIcons();</script>
+</body>
+</html>

@@ -1,8 +1,8 @@
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 
-from flask import Blueprint, jsonify, render_template, request
-from flask_login import current_user
+from flask import Blueprint, jsonify, redirect, render_template, request, url_for
+from flask_login import current_user, login_required
 
 import config as _config
 from downloader import QUALITY_OPTIONS, VideoDownloader
@@ -64,6 +64,71 @@ def index():
 def pricing():
     cfg = _config.load()
     return render_template("pricing.html", theme=cfg.get("theme", "dark"))
+
+
+@main_bp.route("/tos")
+def tos():
+    cfg = _config.load()
+    return render_template("tos.html", theme=cfg.get("theme", "dark"))
+
+
+@main_bp.route("/privacy")
+def privacy():
+    cfg = _config.load()
+    return render_template("privacy.html", theme=cfg.get("theme", "dark"))
+
+
+@main_bp.route("/account")
+@login_required
+def account():
+    cfg = _config.load()
+    now = datetime.utcnow()
+    since_24h = now - timedelta(hours=24)
+
+    total      = Download.query.filter_by(user_id=current_user.id).count()
+    this_month = Download.query.filter(
+        Download.user_id == current_user.id,
+        Download.date >= datetime(now.year, now.month, 1),
+    ).count()
+    platforms  = (
+        db.session.query(Download.platform)
+        .filter_by(user_id=current_user.id)
+        .distinct().count()
+    )
+    today_dl = Download.query.filter(
+        Download.user_id == current_user.id,
+        Download.date >= since_24h,
+    ).all()
+    today_count = len(today_dl)
+
+    reset_in = None
+    if today_count >= 3:
+        oldest     = min(d.date for d in today_dl)
+        reset_at   = oldest + timedelta(hours=24)
+        secs_left  = int((reset_at - now).total_seconds())
+        h, m       = secs_left // 3600, (secs_left % 3600) // 60
+        reset_in   = f"{h}h {m}m" if h else f"{m} minutes"
+
+    history = (
+        Download.query
+        .filter_by(user_id=current_user.id)
+        .order_by(Download.date.desc())
+        .limit(15).all()
+    )
+
+    stats = {
+        "total":      total,
+        "this_month": this_month,
+        "platforms":  platforms,
+        "today":      today_count,
+        "reset_in":   reset_in,
+    }
+    return render_template(
+        "account.html",
+        theme=cfg.get("theme", "dark"),
+        stats=stats,
+        history=history,
+    )
 
 
 @main_bp.route("/info", methods=["POST"])

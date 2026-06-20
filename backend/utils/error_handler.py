@@ -1,14 +1,26 @@
 import logging
+import os
 from pathlib import Path
 
-_LOG_DIR = Path(__file__).parent.parent / "logs"
-_LOG_DIR.mkdir(exist_ok=True)
+if os.getenv("VERCEL"):
+    _LOG_DIR = Path("/tmp")
+else:
+    _LOG_DIR = Path(__file__).parent.parent / "logs"
+    _LOG_DIR.mkdir(exist_ok=True)
 
-logging.basicConfig(
-    filename=str(_LOG_DIR / "errors.log"),
-    level=logging.ERROR,
-    format="%(asctime)s %(levelname)s %(message)s",
-)
+try:
+    logging.basicConfig(
+        filename=str(_LOG_DIR / "errors.log"),
+        level=logging.ERROR,
+        format="%(asctime)s %(levelname)s %(message)s",
+    )
+except OSError:
+    # Log file isn't writable (e.g. restrictive filesystem permissions) —
+    # fall back to console logging instead of crashing the app at import time.
+    logging.basicConfig(
+        level=logging.ERROR,
+        format="%(asctime)s %(levelname)s %(message)s",
+    )
 
 ERROR_MESSAGES = {
     "bot_detection": (

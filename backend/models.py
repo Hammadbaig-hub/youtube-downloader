@@ -25,6 +25,22 @@ class Download(db.Model):
     date      = db.Column(db.DateTime, default=datetime.utcnow)
 
 
+class DownloadJob(db.Model):
+    """Persists job state across serverless requests (used on Vercel)."""
+    __tablename__ = 'download_job'
+    id          = db.Column(db.Integer, primary_key=True)
+    job_id      = db.Column(db.String(36), unique=True, nullable=False, index=True)
+    user_id     = db.Column(db.Integer, db.ForeignKey('user.id'))
+    status      = db.Column(db.String(20), default='starting')
+    title       = db.Column(db.String(500))
+    quality     = db.Column(db.String(50))
+    direct_url  = db.Column(db.Text)
+    filename    = db.Column(db.String(500))
+    error       = db.Column(db.Text)
+    is_playlist = db.Column(db.Boolean, default=False)
+    created_at  = db.Column(db.DateTime, default=datetime.utcnow)
+
+
 class Admin(UserMixin, db.Model):
     id             = db.Column(db.Integer, primary_key=True)
     username       = db.Column(db.String(50), unique=True)
