@@ -155,14 +155,20 @@ class VideoDownloader:
         base_dir = output_dir or DOWNLOAD_DIR
         base_dir.mkdir(parents=True, exist_ok=True)
 
+        # Titles can run 200+ chars (social-media captions, hashtags, etc.) and
+        # some contain periods, which breaks yt-dlp's trim_file_name (it splits
+        # on '.' to separate the extension, so a mid-title period causes it to
+        # only trim the part before that period). Truncate via the template's
+        # printf-style precision instead, so the cap is exact regardless of
+        # periods in the title.
         if is_playlist:
             output_tpl = str(
                 base_dir
-                / "%(playlist_title)s"
-                / "%(playlist_index)02d - %(title)s.%(ext)s"
+                / "%(playlist_title).60s"
+                / "%(playlist_index)02d - %(title).80s.%(ext)s"
             )
         else:
-            output_tpl = str(base_dir / "%(title)s.%(ext)s")
+            output_tpl = str(base_dir / "%(title).80s.%(ext)s")
 
         hook = progress_callback if progress_callback else self._progress_hook
         ydl_opts: dict = {
