@@ -41,3 +41,5 @@ admin_settings.json
 .idea/
 *.swp
 *.swo
+
+.vercel
