@@ -38,6 +38,15 @@ def check_maintenance():
 
 @main_bp.route("/")
 def index():
+    """Landing page — introduces the product and links through to the tool."""
+    cfg = _config.load()
+    return render_template("index.html", theme=cfg.get("theme", "dark"))
+
+
+# Note: /download is the tool page; /download/<job_id> in the api blueprint
+# serves the finished file. Flask matches the static rule first, so they coexist.
+@main_bp.route("/download")
+def download_page():
     cfg = _config.load()
     user_stats = {"total": 0, "platforms": 0, "this_month": 0}
     if current_user.is_authenticated:
@@ -56,7 +65,7 @@ def index():
         user_stats = {"total": total, "platforms": platforms, "this_month": this_month}
 
     return render_template(
-        "index.html",
+        "download.html",
         qualities=QUALITY_OPTIONS,
         default_quality=cfg.get("default_quality", "1"),
         live_durations=LIVE_DURATIONS,

@@ -53,6 +53,19 @@ def _find_ffmpeg() -> str | None:
 _FFMPEG_LOCATION: str | None = _find_ffmpeg()
 
 
+""
+# NOTE ON aria2c
+# aria2c looks like the obvious fix here (it opens 16 parallel connections and
+# YouTube throttles per connection), and a raw range-request probe suggested a
+# ~3.5x gain. It does not survive a controlled test: with downloads run
+# alternating against the built-in downloader, aria2c came out at 0.62x — i.e.
+# consistently SLOWER over 3 rounds — and separately failed with `aria2c exited
+# with code 22`. The raw probe was misleading because it split a small sample
+# into tiny ranges, measuring YouTube's per-connection opening burst rather
+# than sustained throughput. Do not re-add it without an interleaved A/B that
+# actually shows a win.
+
+
 def _find_js_runtime() -> dict[str, dict]:
     """
     YouTube signs its media URLs with a JS challenge. yt-dlp can only solve it
@@ -88,11 +101,24 @@ def _base_opts() -> dict:
     opts: dict = {
         "js_runtimes": _JS_RUNTIMES,
         "remote_components": _REMOTE_COMPONENTS,
-        # The default `web` client is the one that gets rate-limited (HTTP 429)
-        # and bot-flagged hardest. These fall back cleanly without cookies.
+        # Order matters for speed, not just availability. Measured on one video:
+        #   android_vr  27 progressive https formats
+        #   web_safari   6 m3u8_native (HLS) + 1 https
+        #   tv / web     1 usable https format each
+        # HLS is fetched as many small segments, so when web_safari came first
+        # the selector picked m3u8 renditions and throughput collapsed.
+        # android_vr leads because it exposes plain https formats that download
+        # as one ranged request; the rest stay as fallbacks for odd videos.
         "extractor_args": {
-            "youtube": {"player_client": ["tv", "web_safari", "android_vr", "web"]},
+            "youtube": {"player_client": ["android_vr", "web_safari", "tv", "web"]},
         },
+        # Whenever a format *is* fragmented (HLS, DASH segments, live), fetch
+        # segments in parallel — yt-dlp defaults to 1 at a time.
+        "concurrent_fragment_downloads": 8,
+        # Request the file in 10 MB ranges. A single open-ended request tends to
+        # get throttled part-way through; re-ranging keeps throughput up and
+        # makes a stall cost one chunk instead of the whole transfer.
+        "http_chunk_size": 10 * 1024 * 1024,
         # 429 is usually transient; back off instead of failing the job.
         "retries": 5,
         "extractor_retries": 3,
@@ -307,7 +333,9 @@ class VideoDownloader:
         if live_seconds:
             # A live stream has no end, so cap the recording with ffmpeg's -t.
             # It exits cleanly at the limit and finalises a playable file.
+            # Merge, don't replace: _base_opts() may have put aria2c args here.
             ydl_opts["external_downloader_args"] = {
+                **ydl_opts.get("external_downloader_args", {}),
                 "ffmpeg_o": ["-t", str(int(live_seconds))],
             }
             # Live HLS is a single muxed stream; there is nothing to merge, and

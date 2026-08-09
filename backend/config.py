@@ -16,7 +16,7 @@ _DEFAULT_DB_PATH = f"sqlite:///{Path(__file__).parent / 'instance' / 'vidflow.db
 DEFAULTS: dict = {
     "download_dir":    _DEFAULT_DOWNLOAD_DIR,
     "default_quality": "1",
-    "theme":           "dark",
+    "theme":           "light",
 }
 
 

@@ -15,7 +15,7 @@
 <!-- ── Navbar ─────────────────────────────────────────────────────────────── -->
 <nav class="navbar" id="navbar">
   <div class="nav-inner">
-    <a class="nav-logo" href="#">
+    <a class="nav-logo" href="/">
       <div class="nav-logo-icon">
         <svg viewBox="0 0 24 24">
           <path d="M3 5 Q7 15 12 18 Q17 15 21 5"/>
@@ -27,10 +27,16 @@
 
     <div class="nav-links" id="nav-links">
       <a href="/" class="active">Home</a>
+      <a href="/download">Downloader</a>
       <a href="/pricing">Pricing</a>
     </div>
 
     <div class="nav-actions">
+
+      <a href="/download" class="nav-cta-btn">
+        <i data-lucide="download"></i>
+        <span>Download</span>
+      </a>
 
       {% if current_user.is_authenticated %}
       <div class="nav-user" id="nav-user">
@@ -55,7 +61,7 @@
             <i data-lucide="user"></i>
             <span>My Account</span>
           </a>
-          <a href="#history" class="dropdown-item" onclick="closeUserMenu()">
+          <a href="/download#history" class="dropdown-item" onclick="closeUserMenu()">
             <i data-lucide="clock"></i>
             <span>My Downloads</span>
           </a>
@@ -73,9 +79,6 @@
       </a>
       {% endif %}
 
-      <button class="nav-settings-btn" onclick="openSettings()" title="Settings">
-        <i data-lucide="settings"></i>
-      </button>
       <button class="hamburger" id="hamburger" onclick="toggleMenu()" aria-label="Menu">
         <span></span><span></span><span></span>
       </button>
@@ -91,7 +94,7 @@
 
     <div class="hero-badge reveal">
       <i data-lucide="globe"></i>
-      <span class="count-badge-num"></span>+ Sites &middot; Free &middot; HD Support
+      1000+ Sites &middot; Free &middot; HD Support
     </div>
 
     <h1 class="hero-title">
@@ -102,21 +105,20 @@
     </h1>
 
     <p class="hero-sub reveal">
-      Download videos from <strong>YouTube, Instagram, TikTok, X, Facebook, Vimeo</strong> &amp; 1000+ more sites — in HD or MP3.<br />
-      Just paste a URL. No setup. Works instantly.
+      Save videos from <strong>YouTube, Instagram, TikTok, X, Facebook, Vimeo</strong>
+      &amp; 1000+ more sites — in HD or as MP3.<br />
+      No setup, no software to install.
     </p>
 
-    <div class="search-bar reveal" id="search-bar">
-      <div class="search-icon">
-        <i data-lucide="link-2"></i>
-      </div>
-      <input class="search-input" id="url" type="text"
-             placeholder="Paste any video URL (YouTube, Instagram, TikTok…)"
-             autocomplete="off" spellcheck="false" />
-      <button class="search-btn" id="dl-btn" onclick="startDownload()">
+    <div class="hero-cta-row reveal">
+      <a href="/download" class="hero-cta">
         <i data-lucide="download"></i>
-        <span id="dl-btn-text">Download</span>
-      </button>
+        Open Downloader
+      </a>
+      <a href="#how" class="hero-cta hero-cta-ghost">
+        <i data-lucide="play-circle"></i>
+        See how it works
+      </a>
     </div>
 
     <!-- Platform chips -->
@@ -176,133 +178,43 @@
   </div>
 </section>
 
-<!-- ── Controls Section ───────────────────────────────────────────────────── -->
-<section class="controls-section">
-  <div class="controls-inner">
+<!-- ── How it works ───────────────────────────────────────────────────────── -->
+<section class="steps-section" id="how">
+  <div class="section-inner">
+    <div class="section-tag reveal">How it works</div>
+    <h2 class="section-title reveal">Three steps, about ten seconds</h2>
 
-    <div id="info-strip">
-      <div class="info-loading" id="info-loading">
-        <div class="spinner"></div>
-        <span>Fetching video info…</span>
+    <div class="steps-grid">
+
+      <div class="step-card reveal">
+        <div class="step-num">1</div>
+        <div class="step-icon"><i data-lucide="link-2"></i></div>
+        <h3>Copy the link</h3>
+        <p>Grab the URL of any video, playlist or live stream from your browser or the app's share menu.</p>
       </div>
-      <div class="info-content" id="info-content">
-        <div class="info-thumb-row" id="info-thumb-row" style="display:none">
-          <img id="info-thumb" alt="" />
-          <div class="thumb-overlay"></div>
-        </div>
-        <div class="info-meta-row">
-          <span class="info-type-badge badge-video" id="info-type-badge">Video</span>
-          <div class="info-text">
-            <div class="info-title" id="info-title">—</div>
-            <div class="info-sub"   id="info-sub">—</div>
-          </div>
-          <label class="playlist-toggle" id="pl-toggle-wrap" style="display:none">
-            <input type="checkbox" id="dl-playlist" checked />
-            <span>All</span>
-          </label>
-        </div>
+
+      <div class="step-card reveal">
+        <div class="step-num">2</div>
+        <div class="step-icon"><i data-lucide="sliders-horizontal"></i></div>
+        <h3>Paste &amp; pick quality</h3>
+        <p>Drop it into the downloader. We read the video details instantly, then you choose HD, SD or MP3.</p>
       </div>
+
+      <div class="step-card reveal">
+        <div class="step-num">3</div>
+        <div class="step-icon"><i data-lucide="download"></i></div>
+        <h3>Save the file</h3>
+        <p>Watch live progress as it downloads, then the finished file lands straight in your download folder.</p>
+      </div>
+
     </div>
 
-    <div class="quality-card">
-      <div class="quality-header">
-        <i data-lucide="sliders-horizontal"></i>
-        <span>Quality</span>
-      </div>
-      <div class="quality-grid" id="quality-grid">
-        {% for key, opt in qualities.items() %}
-        <button class="q-pill {% if key == default_quality %}active{% endif %}"
-                data-key="{{ key }}" onclick="selectQuality(this)">
-          {{ opt.name }}
-        </button>
-        {% endfor %}
-      </div>
+    <div class="steps-cta reveal">
+      <a href="/download" class="hero-cta">
+        <i data-lucide="download"></i>
+        Start downloading
+      </a>
     </div>
-
-    <div class="quality-card" id="live-card" style="display:none">
-      <div class="quality-header">
-        <i data-lucide="radio"></i>
-        <span>Record for</span>
-      </div>
-      <div class="quality-grid" id="live-grid">
-        {% for key, opt in live_durations.items() %}
-        <button class="q-pill {% if key == default_live_duration %}active{% endif %}"
-                data-key="{{ key }}" onclick="selectLiveDuration(this)">
-          {{ opt.name }}
-        </button>
-        {% endfor %}
-      </div>
-      <p class="live-note">
-        This stream is live, so it has to be recorded as it airs — expect it to
-        take at least as long as the length you pick, longer on a slow
-        connection. You can stop early and keep what has been recorded.
-      </p>
-    </div>
-
-    <div id="prog-card">
-      <div class="prog-card-inner">
-
-        <div class="prog-header">
-          <div class="badge badge-starting" id="badge">
-            <div class="dot"></div>
-            <span id="badge-text">Starting</span>
-          </div>
-          <div class="vid-title" id="vid-title"></div>
-        </div>
-
-        <div class="pl-counter" id="pl-counter">
-          <i data-lucide="list-video"></i>
-          Video <span id="pl-index">1</span> of <span id="pl-total">?</span>
-        </div>
-
-        <div class="bar-label" id="bar-label" style="display:none">Current Video</div>
-        <div class="bar-track"><div class="bar-fill indeterminate" id="bar"></div></div>
-
-        <div id="overall-wrap">
-          <div class="bar-label">Overall Playlist</div>
-          <div class="bar-track"><div class="bar-fill" id="overall-bar"></div></div>
-        </div>
-
-        <div class="stats-grid">
-          <div class="stat-box">
-            <div class="stat-label">Speed</div>
-            <div class="stat-value" id="s-speed">—</div>
-          </div>
-          <div class="stat-box">
-            <div class="stat-label">ETA</div>
-            <div class="stat-value" id="s-eta">—</div>
-          </div>
-          <div class="stat-box">
-            <div class="stat-label">Size</div>
-            <div class="stat-value" id="s-size">—</div>
-          </div>
-          <div class="stat-box">
-            <div class="stat-label">Done</div>
-            <div class="stat-value" id="s-pct">0%</div>
-          </div>
-        </div>
-
-        <div id="stop-wrap" style="display:none">
-          <button class="stop-btn" id="stop-btn" onclick="stopRecording()">
-            <i data-lucide="square"></i>
-            Stop &amp; save recording
-          </button>
-        </div>
-
-        <div class="banner banner-done" id="msg-done" style="display:none">
-          <i data-lucide="check-circle-2"></i>
-          <span id="done-text">Downloaded successfully!</span>
-          <span class="banner-action" id="done-action" onclick="retryDownload()">Save again</span>
-        </div>
-
-        <div class="banner banner-error" id="msg-error" style="display:none">
-          <i data-lucide="alert-circle"></i>
-          <span id="err-text"></span>
-        </div>
-
-      </div>
-    </div>
-
   </div>
 </section>
 
@@ -332,9 +244,21 @@
       </div>
 
       <div class="feature-card reveal">
+        <div class="feature-icon"><i data-lucide="radio"></i></div>
+        <h3>Live Streams</h3>
+        <p>Record a broadcast while it airs. Pick how long to capture, or stop any time and keep what you've got.</p>
+      </div>
+
+      <div class="feature-card reveal">
         <div class="feature-icon"><i data-lucide="sliders-horizontal"></i></div>
         <h3>Quality Control</h3>
         <p>Choose from Best, 1080p, 720p, 480p, 360p, or Audio Only (MP3 at 192 kbps).</p>
+      </div>
+
+      <div class="feature-card reveal">
+        <div class="feature-icon"><i data-lucide="clock"></i></div>
+        <h3>Download History</h3>
+        <p>Every download is logged to your account, so you can see what you saved and when — and clear it whenever.</p>
       </div>
 
     </div>
@@ -365,6 +289,16 @@
         </button>
         <div class="faq-a">
           <p>Yes — paste any YouTube playlist URL and VidFlow detects it automatically. Enable the "All" toggle to download the full playlist. Re-running the same playlist skips already-saved videos automatically.</p>
+        </div>
+      </div>
+
+      <div class="faq-item reveal">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          <span>Can I download a live stream?</span>
+          <span class="faq-icon"><i data-lucide="chevron-down"></i></span>
+        </button>
+        <div class="faq-a">
+          <p>Yes. A live broadcast has no end, so it is recorded as it airs rather than downloaded in one go. Choose how long to record (5 minutes up to an hour) and VidFlow captures from that moment. You can stop early at any point and the partial recording stays playable. Expect it to take at least as long as the length you pick.</p>
         </div>
       </div>
 
@@ -402,61 +336,17 @@
   </div>
 </section>
 
-<!-- ── User Stats (logged-in only) ────────────────────────────────────────── -->
-{% if current_user.is_authenticated %}
-<section class="user-stats-section">
+<!-- ── Closing CTA ────────────────────────────────────────────────────────── -->
+<section class="final-cta-section">
   <div class="section-inner">
-    <div class="user-stats-grid">
-      <div class="user-stat-card reveal">
-        <div class="user-stat-num" id="stat-total">{{ user_stats.total }}</div>
-        <div class="user-stat-label">Total Downloads</div>
-      </div>
-      <div class="user-stat-card reveal">
-        <div class="user-stat-num" id="stat-platforms">{{ user_stats.platforms }}</div>
-        <div class="user-stat-label">Platforms Used</div>
-      </div>
-      <div class="user-stat-card reveal">
-        <div class="user-stat-num" id="stat-month">{{ user_stats.this_month }}</div>
-        <div class="user-stat-label">This Month</div>
-      </div>
+    <div class="final-cta reveal">
+      <h2>Ready to grab your first video?</h2>
+      <p>Paste a link and it's yours in seconds — free, no account needed to try.</p>
+      <a href="/download" class="hero-cta">
+        <i data-lucide="download"></i>
+        Open the Downloader
+      </a>
     </div>
-  </div>
-</section>
-{% endif %}
-
-<!-- ── History ─────────────────────────────────────────────────────────────── -->
-<section class="history-section" id="history">
-  <div class="section-inner">
-    <div class="history-header">
-      <div>
-        <div class="section-tag reveal">Recent</div>
-        <h2 class="section-title reveal" style="margin-bottom:0">Download History</h2>
-      </div>
-      <button class="clear-history-btn" id="clear-history-btn" onclick="clearHistory()" style="display:none">
-        <i data-lucide="trash-2"></i>
-        Clear
-      </button>
-    </div>
-
-    <div class="history-empty reveal" id="history-empty">
-      <i data-lucide="clock"></i>
-      <span>Your download history will appear here</span>
-    </div>
-
-    <div class="history-table-wrap" id="history-table-wrap" style="display:none">
-      <table class="history-table">
-        <thead>
-          <tr>
-            <th>Title</th>
-            <th>Quality</th>
-            <th>Date</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody id="history-tbody"></tbody>
-      </table>
-    </div>
-
   </div>
 </section>
 
@@ -474,6 +364,7 @@
     </div>
     <p class="footer-copy">Copyright &copy; 2026 VidFlow. All rights reserved.</p>
     <p class="footer-links">
+      <a href="/download">Downloader</a>
       <a href="/tos">Terms</a>
       <a href="/privacy">Privacy</a>
       <a href="/pricing">Pricing</a>
@@ -481,63 +372,61 @@
   </div>
 </footer>
 
-<!-- ── Toast container ────────────────────────────────────────────────────── -->
-<div class="toast-container" id="toast-container"></div>
-
-<!-- ── Settings modal ─────────────────────────────────────────────────────── -->
-<div class="overlay" id="overlay" onclick="closeIfBackdrop(event)">
-  <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title">
-        <i data-lucide="settings"></i>
-        Settings
-      </div>
-      <button class="close-btn" onclick="closeSettings()">
-        <i data-lucide="x"></i>
-      </button>
-    </div>
-
-    <div class="setting-row">
-      <div class="setting-label">Default Quality</div>
-      <div class="modal-quality-grid" id="cfg-quality-grid">
-        {% for key, opt in qualities.items() %}
-        <button class="q-pill {% if key == default_quality %}active{% endif %}"
-                data-key="{{ key }}" onclick="setCfgQuality(this)">{{ opt.name }}</button>
-        {% endfor %}
-      </div>
-    </div>
-
-    <div class="setting-row">
-      <div class="setting-label">Download Folder</div>
-      <input class="dir-input" id="cfg-dir" type="text"
-             value="{{ download_dir }}" spellcheck="false" />
-    </div>
-
-    <div class="modal-sep"></div>
-    <button class="btn-save" onclick="saveSettings()">
-      <i data-lucide="save"></i>
-      Save Settings
-    </button>
-    <div class="save-note" id="save-note"></div>
-  </div>
-</div>
-
 <!-- ── Scripts ────────────────────────────────────────────────────────────── -->
-<script>
-  window.DEFAULT_QUALITY  = '{{ default_quality }}';
-  window.CURRENT_THEME    = '{{ theme }}';
-  window.DOWNLOAD_DIR     = '{{ download_dir }}';
-  window.USER_LOGGED_IN   = {{ 'true' if current_user.is_authenticated else 'false' }};
-  window.USER_NAME        = '{{ (current_user.name or "") if current_user.is_authenticated else "" }}';
-  window.CSRF_TOKEN       = '{{ csrf_token() }}';
-</script>
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-<script src="{{ url_for('static', filename='js/utils.js') }}"></script>
-<script src="{{ url_for('static', filename='js/downloader.js') }}"></script>
-<script src="{{ url_for('static', filename='js/main.js') }}"></script>
 <script>
-  lucide.createIcons();
-  initVidFlow();
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+
+  /* Reveal-on-scroll: .reveal starts at opacity 0, so this must run. */
+  (function () {
+    var obs = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          obs.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.05, rootMargin: '0px 0px -40px 0px' });
+    document.querySelectorAll('.reveal').forEach(function (el) { obs.observe(el); });
+  })();
+
+  var navbar = document.getElementById('navbar');
+  if (navbar) {
+    window.addEventListener('scroll', function () {
+      navbar.style.borderBottomColor = window.scrollY > 10 ? 'var(--border)' : 'transparent';
+    }, { passive: true });
+  }
+
+  function toggleMenu() {
+    var l = document.getElementById('nav-links');
+    var h = document.getElementById('hamburger');
+    if (l) l.classList.toggle('open');
+    if (h) h.classList.toggle('open');
+  }
+  function toggleUserMenu() {
+    var d = document.getElementById('nav-user-dropdown');
+    var b = document.getElementById('nav-user-btn');
+    if (!d) return;
+    var open = d.classList.toggle('show');
+    if (b) b.classList.toggle('open', open);
+  }
+  function closeUserMenu() {
+    var d = document.getElementById('nav-user-dropdown');
+    var b = document.getElementById('nav-user-btn');
+    if (d) d.classList.remove('show');
+    if (b) b.classList.remove('open');
+  }
+  document.addEventListener('click', function (e) {
+    var nu = document.getElementById('nav-user');
+    if (nu && !nu.contains(e.target)) closeUserMenu();
+  });
+
+  function toggleFaq(btn) {
+    var item   = btn.closest('.faq-item');
+    var isOpen = item.classList.contains('open');
+    document.querySelectorAll('.faq-item.open').forEach(function (i) { i.classList.remove('open'); });
+    if (!isOpen) item.classList.add('open');
+  }
 </script>
 
 </body>

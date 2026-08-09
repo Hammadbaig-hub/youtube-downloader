@@ -67,7 +67,7 @@ def init_oauth(app):
 @auth_bp.route("/login")
 def login_page():
     if current_user.is_authenticated:
-        return redirect(url_for("main.index"))
+        return redirect(url_for("main.download_page"))
     cfg = _config.load()
     return render_template("login.html", theme=cfg.get("theme", "dark"))
 
@@ -106,7 +106,8 @@ def auth_google_callback():
             db.session.commit()
 
         login_user(user)
-        return redirect(url_for("main.index"))
+        # Signing in is only required in order to download, so land on the tool.
+        return redirect(url_for("main.download_page"))
     except Exception:
         return redirect(url_for("auth.login_page"))
 
