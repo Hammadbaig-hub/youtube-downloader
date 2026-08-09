@@ -86,6 +86,13 @@ function selectQuality(btn) {
   selectedKey = btn.dataset.key;
 }
 
+/* ── Live recording length ────────────────────────────────────────────────── */
+function selectLiveDuration(btn) {
+  document.querySelectorAll('#live-grid .q-pill').forEach(function (b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+  selectedLiveKey = btn.dataset.key;
+}
+
 /* ── Settings modal ───────────────────────────────────────────────────────── */
 function openSettings() {
   refreshThemeButtons(currentTheme);

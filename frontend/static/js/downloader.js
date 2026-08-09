@@ -69,17 +69,28 @@ function renderInfo(d) {
     }
   }
 
+  var isLive = d.live === 'live';
+
   var badge = document.getElementById('info-type-badge');
   if (badge) {
-    badge.textContent = isPlaylist ? '▶ Playlist' : '▶ Video';
-    badge.className   = 'info-type-badge ' + (isPlaylist ? 'badge-playlist' : 'badge-video');
+    badge.textContent = isLive ? '● LIVE' : (isPlaylist ? '▶ Playlist' : '▶ Video');
+    badge.className   = 'info-type-badge ' +
+      (isLive ? 'badge-live' : (isPlaylist ? 'badge-playlist' : 'badge-video'));
   }
+
+  // A live stream is recorded for a chosen span, not downloaded whole.
+  var liveCard = document.getElementById('live-card');
+  if (liveCard) liveCard.style.display = isLive ? 'block' : 'none';
 
   var titleEl = document.getElementById('info-title');
   if (titleEl) titleEl.textContent = d.title || 'Unknown';
 
   var sub = d.uploader || '';
-  if (isPlaylist) {
+  if (isLive) {
+    sub += (sub ? ' · ' : '') + 'Broadcasting now';
+  } else if (d.live === 'upcoming') {
+    sub += (sub ? ' · ' : '') + 'Not started yet';
+  } else if (isPlaylist) {
     sub += (sub ? ' · ' : '') + d.count + ' videos';
   } else if (d.duration) {
     var m = Math.floor(d.duration / 60), s = d.duration % 60;
@@ -139,7 +150,13 @@ async function startDownload() {
     var res  = await csrfFetch('/start', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url: url, quality: selectedKey, is_playlist: isPlaylist, playlist_count: playlistCount }),
+      body: JSON.stringify({
+        url: url,
+        quality: selectedKey,
+        is_playlist: isPlaylist,
+        playlist_count: playlistCount,
+        live_duration: selectedLiveKey,
+      }),
     });
     var data = await res.json();
     if (res.status === 429 && data.error === 'limit_reached') {
@@ -151,23 +168,24 @@ async function startDownload() {
     }
     if (data.error) throw new Error(data.error);
     currentJobId = data.job_id;
-    // Vercel: /start completes synchronously and returns the final status directly
-    if (data.status === 'done' || data.status === 'error') {
-      applyUpdate({
-        status: data.status,
-        title: data.title || '',
-        error: data.error || '',
-        is_playlist: isPlaylist,
-        percent: data.status === 'done' ? 100 : 0,
-        overall_percent: data.status === 'done' ? 100 : 0,
-        files: [],
-      });
-    } else {
-      schedulePoll();
-    }
+    schedulePoll();
   } catch (err) {
     showError(err.message);
     setBtn(false);
+  }
+}
+
+/* ── Stop a live recording ────────────────────────────────────────────────── */
+async function stopRecording() {
+  if (!currentJobId) return;
+  var btn = document.getElementById('stop-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Finishing…'; }
+  try {
+    var res  = await csrfFetch('/stop/' + currentJobId, { method: 'POST' });
+    var data = await res.json();
+    if (data.error) showError(data.error);
+  } catch (err) {
+    showError(err.message);
   }
 }
 
@@ -204,6 +222,10 @@ function applyUpdate(d) {
     setText('s-size',  d.size  || '—');
     setText('s-pct',   (d.percent || 0).toFixed(1) + '%');
 
+    // Live recordings run in real time, so offer a way out before the limit.
+    var stopWrap = document.getElementById('stop-wrap');
+    if (stopWrap) stopWrap.style.display = d.is_live ? 'flex' : 'none';
+
     if (isPlaylist) {
       var idx   = d.playlist_index || 0;
       var total = d.playlist_count || 0;
@@ -224,6 +246,9 @@ function applyUpdate(d) {
     indeterminate(false);
     setBar(100, true);
     setText('s-pct', '100%');
+
+    var stopDone = document.getElementById('stop-wrap');
+    if (stopDone) stopDone.style.display = 'none';
 
     if (isPlaylist) {
       setOverallBar(100);

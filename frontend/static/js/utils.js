@@ -4,6 +4,7 @@
 var currentJobId   = null;
 var pollTimer      = null;
 var selectedKey    = '1';
+var selectedLiveKey = '10';   // live recording length, in minutes
 var cfgKey         = '1';
 var currentTheme   = 'dark';
 var detectedInfo   = null;

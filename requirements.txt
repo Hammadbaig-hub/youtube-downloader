@@ -1,4 +1,6 @@
-yt-dlp>=2024.1.0
+# downloader.py passes the js_runtimes / remote_components options used to solve
+# YouTube's signature challenge; 2026.7.4 is the release verified to accept them.
+yt-dlp>=2026.7.4
 flask>=3.0.0
 flask-login>=0.6.0
 flask-sqlalchemy>=3.1.0

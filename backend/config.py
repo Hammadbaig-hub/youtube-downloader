@@ -8,19 +8,10 @@ load_dotenv()
 
 _BASE_DIR = Path(__file__).parent.parent  # project root
 
-IS_VERCEL = bool(os.getenv("VERCEL"))
-
-# ── Paths: use /tmp on Vercel (read-only filesystem except /tmp) ──────────────
-if IS_VERCEL:
-    CONFIG_PATH        = Path("/tmp/config.json")
-    ADMIN_SETTINGS_PATH = Path("/tmp/admin_settings.json")
-    _DEFAULT_DOWNLOAD_DIR = "/tmp/downloads"
-    _DEFAULT_DB_PATH = "sqlite:////tmp/vidflow.db"
-else:
-    CONFIG_PATH        = Path(__file__).parent / "config.json"
-    ADMIN_SETTINGS_PATH = Path(__file__).parent / "admin_settings.json"
-    _DEFAULT_DOWNLOAD_DIR = str(Path(__file__).parent / "downloads")
-    _DEFAULT_DB_PATH = f"sqlite:///{Path(__file__).parent / 'instance' / 'vidflow.db'}"
+CONFIG_PATH         = Path(__file__).parent / "config.json"
+ADMIN_SETTINGS_PATH = Path(__file__).parent / "admin_settings.json"
+_DEFAULT_DOWNLOAD_DIR = str(Path(__file__).parent / "downloads")
+_DEFAULT_DB_PATH = f"sqlite:///{Path(__file__).parent / 'instance' / 'vidflow.db'}"
 
 DEFAULTS: dict = {
     "download_dir":    _DEFAULT_DOWNLOAD_DIR,

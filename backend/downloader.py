@@ -1,12 +1,16 @@
 """
 downloader.py — yt-dlp wrapper.
 
-VideoDownloader.download()        — saves file to disk (local dev)
-VideoDownloader.get_direct_url()  — extracts direct URL without downloading (Vercel)
+VideoDownloader.download() — saves file to disk, merging with ffmpeg.
+
+Live streams are handled separately: they have no end and no total size, so
+they are recorded for a fixed duration (or until stopped) rather than
+"downloaded". See LIVE_DURATIONS and stop_live_job().
 """
 
-import re
+import os
 import shutil
+import threading
 import yt_dlp
 from pathlib import Path
 
@@ -49,6 +53,60 @@ def _find_ffmpeg() -> str | None:
 _FFMPEG_LOCATION: str | None = _find_ffmpeg()
 
 
+def _find_js_runtime() -> dict[str, dict]:
+    """
+    YouTube signs its media URLs with a JS challenge. yt-dlp can only solve it
+    with a JavaScript runtime, and it enables *deno only* by default — so a box
+    with just Node installed silently falls back to the deprecated JS-less path,
+    where signature/n-challenge solving fails and formats go missing.
+    Enable whichever runtime is actually present.
+    """
+    for name in ("deno", "node", "bun", "quickjs"):
+        if shutil.which(name):
+            return {name: {}}
+    return {}
+
+
+_JS_RUNTIMES: dict[str, dict] = _find_js_runtime()
+
+# Solving the challenge also needs yt-dlp's EJS solver script, which is fetched
+# on demand rather than shipped in the package. Without it the runtime above is
+# useless. Opt out with YTDLP_NO_REMOTE_COMPONENTS=1 if egress is restricted.
+_REMOTE_COMPONENTS: list[str] = (
+    [] if os.getenv("YTDLP_NO_REMOTE_COMPONENTS") else ["ejs:github"]
+)
+
+# Cookies are the documented remedy for "Sign in to confirm you're not a bot".
+# YTDLP_COOKIEFILE=/path/to/cookies.txt  (Netscape format), or
+# YTDLP_COOKIES_FROM_BROWSER=chrome|firefox|edge|brave (local dev only).
+_COOKIEFILE = os.getenv("YTDLP_COOKIEFILE") or None
+_COOKIES_FROM_BROWSER = os.getenv("YTDLP_COOKIES_FROM_BROWSER") or None
+
+
+def _base_opts() -> dict:
+    """yt-dlp options every call path needs to get past YouTube's restrictions."""
+    opts: dict = {
+        "js_runtimes": _JS_RUNTIMES,
+        "remote_components": _REMOTE_COMPONENTS,
+        # The default `web` client is the one that gets rate-limited (HTTP 429)
+        # and bot-flagged hardest. These fall back cleanly without cookies.
+        "extractor_args": {
+            "youtube": {"player_client": ["tv", "web_safari", "android_vr", "web"]},
+        },
+        # 429 is usually transient; back off instead of failing the job.
+        "retries": 5,
+        "extractor_retries": 3,
+        "retry_sleep_functions": {"http": lambda n: min(2 ** n, 30)},
+    }
+
+    if _COOKIEFILE and Path(_COOKIEFILE).exists():
+        opts["cookiefile"] = _COOKIEFILE
+    elif _COOKIES_FROM_BROWSER:
+        opts["cookiesfrombrowser"] = (_COOKIES_FROM_BROWSER, None, None, None)
+
+    return opts
+
+
 def _vfmt(h: int) -> str:
     """Format string for local downloads (ffmpeg available)."""
     cap = f"[height<={h}]" if h else ""
@@ -62,23 +120,76 @@ def _vfmt(h: int) -> str:
     )
 
 
-def _vfmt_single(h: int) -> str:
-    """Format string for Vercel (no ffmpeg — single pre-merged stream only)."""
-    cap = f"[height<={h}]" if h else ""
-    # `best` selects the best pre-merged single-file format (no ffmpeg needed)
-    return f"best{cap}[ext=mp4]/best{cap}[ext=webm]/best{cap}/best"
+# ── Live streams ─────────────────────────────────────────────────────────────
+# A live stream never ends and reports no total size, so it can only be
+# *recorded* for a chosen span. Recording runs at real time: 10 minutes of
+# stream takes 10 minutes of wall clock, no matter how fast the connection is.
+LIVE_DURATIONS: dict[str, dict] = {
+    "5":  {"name": "5 minutes",  "seconds": 300},
+    "10": {"name": "10 minutes", "seconds": 600},
+    "30": {"name": "30 minutes", "seconds": 1800},
+    "60": {"name": "1 hour",     "seconds": 3600},
+}
+DEFAULT_LIVE_DURATION = "10"
+
+# yt-dlp hands live streams to ffmpeg, which it runs via yt_dlp.utils.Popen.
+# Tracking those processes is the only way to end a recording early. The list
+# lives in thread-local storage so concurrent jobs never see each other's
+# processes, and the same list object is published per job_id for the API.
+_local = threading.local()
+_LIVE_PROCS: dict[str, list] = {}
+_LIVE_LOCK = threading.Lock()
+
+_YtPopen = yt_dlp.utils.Popen
+
+
+class _TrackedPopen(_YtPopen):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        procs = getattr(_local, "procs", None)
+        if procs is not None:
+            procs.append(self)
+
+
+yt_dlp.downloader.external.Popen = _TrackedPopen
+
+
+def stop_live_job(job_id: str) -> bool:
+    """End a live recording early, keeping what has been written so far."""
+    with _LIVE_LOCK:
+        procs = list(_LIVE_PROCS.get(job_id) or [])
+    if not procs:
+        return False
+
+    for proc in procs:
+        if proc.poll() is not None:
+            continue
+        # 'q' is ffmpeg's graceful quit: it finalises the container so the
+        # partial file stays playable. Fall back to killing it if that fails.
+        try:
+            proc.stdin.write(b"q")
+            proc.stdin.flush()
+        except Exception:
+            pass
+        try:
+            proc.wait(timeout=10)
+        except Exception:
+            try:
+                proc.kill()
+            except Exception:
+                pass
+    return True
 
 
 QUALITY_OPTIONS: dict[str, dict] = {
-    "1": {"name": "Best Quality (auto)", "format": _vfmt(0),    "single": _vfmt_single(0)},
-    "2": {"name": "1080p HD",            "format": _vfmt(1080), "single": _vfmt_single(1080)},
-    "3": {"name": "720p HD",             "format": _vfmt(720),  "single": _vfmt_single(720)},
-    "4": {"name": "480p",                "format": _vfmt(480),  "single": _vfmt_single(480)},
-    "5": {"name": "360p",                "format": _vfmt(360),  "single": _vfmt_single(360)},
+    "1": {"name": "Best Quality (auto)", "format": _vfmt(0)},
+    "2": {"name": "1080p HD",            "format": _vfmt(1080)},
+    "3": {"name": "720p HD",             "format": _vfmt(720)},
+    "4": {"name": "480p",                "format": _vfmt(480)},
+    "5": {"name": "360p",                "format": _vfmt(360)},
     "6": {
         "name":   "Audio Only (MP3)",
         "format": "bestaudio[ext=m4a]/bestaudio/best",
-        "single": "bestaudio[ext=m4a]/bestaudio[ext=webm]/bestaudio",
     },
 }
 
@@ -92,6 +203,7 @@ class VideoDownloader:
 
     def get_info(self, url: str) -> dict:
         opts = {
+            **_base_opts(),
             "quiet": True,
             "no_warnings": True,
             "extract_flat": "in_playlist",
@@ -102,42 +214,21 @@ class VideoDownloader:
             raise ValueError("Could not retrieve information for that URL.")
         return info
 
-    def get_direct_url(self, url: str, quality_key: str) -> dict:
-        """Extract a direct download URL without saving to disk. Used on Vercel."""
-        quality = QUALITY_OPTIONS[quality_key]
-        fmt = quality["single"]
-
-        ydl_opts = {
-            "format": fmt,
-            "quiet": True,
-            "no_warnings": True,
-            "noplaylist": True,
-        }
-
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            info = ydl.extract_info(url, download=False)
-
-        if not info:
-            raise ValueError("Could not retrieve video information.")
-
-        direct_url = info.get("url")
-        if not direct_url:
-            raise ValueError(
-                "Could not extract a direct download URL for this quality. "
-                "Please try 480p or 360p."
-            )
-
-        title = info.get("title", "video")
-        ext = info.get("ext", "mp4")
-        safe_title = re.sub(r'[<>:"/\\|?*\x00-\x1f]', '_', title)[:200]
-        filename = f"{safe_title}.{ext}"
-
-        return {
-            "url": direct_url,
-            "title": title,
-            "filename": filename,
-            "ext": ext,
-        }
+    @staticmethod
+    def live_state(info: dict) -> str:
+        """
+        'live'     — broadcasting now; can only be recorded for a fixed span.
+        'upcoming' — scheduled but not started; nothing to download yet.
+        'ended'    — a finished broadcast, downloadable like any normal video.
+        """
+        status = info.get("live_status")
+        if status == "is_live" or (status is None and info.get("is_live")):
+            return "live"
+        if status in ("is_upcoming", "post_live"):
+            return "upcoming" if status == "is_upcoming" else "ended"
+        if status == "was_live" or info.get("was_live"):
+            return "ended"
+        return "vod"
 
     def download(
         self,
@@ -147,6 +238,8 @@ class VideoDownloader:
         progress_callback=None,
         output_dir: "Path | None" = None,
         archive_file: "Path | None" = None,
+        live_seconds: int | None = None,
+        job_id: str | None = None,
     ) -> list[str]:
         quality = QUALITY_OPTIONS[quality_key]
         is_audio = quality_key == "6"
@@ -172,6 +265,7 @@ class VideoDownloader:
 
         hook = progress_callback if progress_callback else self._progress_hook
         ydl_opts: dict = {
+            **_base_opts(),
             "format": quality["format"],
             "outtmpl": output_tpl,
             "merge_output_format": "mp4",
@@ -200,10 +294,43 @@ class VideoDownloader:
             ]
             del ydl_opts["merge_output_format"]
         else:
+            # Copy both streams instead of re-encoding audio. The format string
+            # above asks for m4a first, which is already AAC, so transcoding it
+            # to AAC again cost ~9 minutes on a 2-hour video (measured 13x
+            # real time vs 8000x for a copy) and looked like a frozen job.
+            # yt-dlp picks container-compatible formats for merge_output_format,
+            # so a straight copy is safe here.
             ydl_opts["postprocessor_args"] = {
-                "merger": ["-c:v", "copy", "-c:a", "aac", "-b:a", "192k"],
+                "merger": ["-c:v", "copy", "-c:a", "copy"],
             }
 
+        if live_seconds:
+            # A live stream has no end, so cap the recording with ffmpeg's -t.
+            # It exits cleanly at the limit and finalises a playable file.
+            ydl_opts["external_downloader_args"] = {
+                "ffmpeg_o": ["-t", str(int(live_seconds))],
+            }
+            # Live HLS is a single muxed stream; there is nothing to merge, and
+            # the merger args above would be rejected by the copy-only pipeline.
+            ydl_opts.pop("postprocessor_args", None)
+
+        # Publish this thread's ffmpeg processes so stop_live_job() can reach
+        # them. Same list object in both places, so appends are visible.
+        procs: list = []
+        _local.procs = procs
+        if job_id:
+            with _LIVE_LOCK:
+                _LIVE_PROCS[job_id] = procs
+
+        try:
+            return self._run(ydl_opts, url, progress_callback)
+        finally:
+            _local.procs = None
+            if job_id:
+                with _LIVE_LOCK:
+                    _LIVE_PROCS.pop(job_id, None)
+
+    def _run(self, ydl_opts: dict, url: str, progress_callback) -> list[str]:
         info: dict | None = None
 
         if progress_callback or not _RICH:

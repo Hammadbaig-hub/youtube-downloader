@@ -5,7 +5,12 @@ from flask import Blueprint, jsonify, redirect, render_template, request, url_fo
 from flask_login import current_user, login_required
 
 import config as _config
-from downloader import QUALITY_OPTIONS, VideoDownloader
+from downloader import (
+    DEFAULT_LIVE_DURATION,
+    LIVE_DURATIONS,
+    QUALITY_OPTIONS,
+    VideoDownloader,
+)
 from models import Download, db
 from utils.platform_detector import extract_url
 
@@ -54,6 +59,8 @@ def index():
         "index.html",
         qualities=QUALITY_OPTIONS,
         default_quality=cfg.get("default_quality", "1"),
+        live_durations=LIVE_DURATIONS,
+        default_live_duration=DEFAULT_LIVE_DURATION,
         theme=cfg.get("theme", "dark"),
         download_dir=cfg.get("download_dir", ""),
         user_stats=user_stats,
@@ -142,6 +149,7 @@ def info_route():
         info = dl.get_info(url)
         is_pl = info.get("_type") == "playlist"
         entries = list(info.get("entries") or []) if is_pl else []
+        live = "vod" if is_pl else dl.live_state(info)
         return jsonify(
             type="playlist" if is_pl else "video",
             title=info.get("title") or "",
@@ -149,6 +157,7 @@ def info_route():
             thumbnail=info.get("thumbnail") or "",
             uploader=info.get("uploader") or "",
             duration=int(info.get("duration") or 0),
+            live=live,
         )
     except Exception as exc:
         return jsonify(error=str(exc)), 400

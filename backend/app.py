@@ -10,7 +10,7 @@ from flask_wtf.csrf import CSRFProtect
 
 sys.path.insert(0, str(Path(__file__).parent))
 
-from config import config as config_map, IS_VERCEL
+from config import config as config_map
 from models import db, User
 from routes.main import main_bp
 from routes.api import api_bp
@@ -51,9 +51,7 @@ def create_app(config_name: str = "default") -> Flask:
     with app.app_context():
         db.create_all()
 
-    # Background file cleanup only makes sense when files are stored on disk
-    if not IS_VERCEL:
-        _start_cleanup_thread(app)
+    _start_cleanup_thread(app)
 
     return app
 

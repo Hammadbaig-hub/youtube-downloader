@@ -219,6 +219,26 @@
       </div>
     </div>
 
+    <div class="quality-card" id="live-card" style="display:none">
+      <div class="quality-header">
+        <i data-lucide="radio"></i>
+        <span>Record for</span>
+      </div>
+      <div class="quality-grid" id="live-grid">
+        {% for key, opt in live_durations.items() %}
+        <button class="q-pill {% if key == default_live_duration %}active{% endif %}"
+                data-key="{{ key }}" onclick="selectLiveDuration(this)">
+          {{ opt.name }}
+        </button>
+        {% endfor %}
+      </div>
+      <p class="live-note">
+        This stream is live, so it has to be recorded as it airs — expect it to
+        take at least as long as the length you pick, longer on a slow
+        connection. You can stop early and keep what has been recorded.
+      </p>
+    </div>
+
     <div id="prog-card">
       <div class="prog-card-inner">
 
@@ -260,6 +280,13 @@
             <div class="stat-label">Done</div>
             <div class="stat-value" id="s-pct">0%</div>
           </div>
+        </div>
+
+        <div id="stop-wrap" style="display:none">
+          <button class="stop-btn" id="stop-btn" onclick="stopRecording()">
+            <i data-lucide="square"></i>
+            Stop &amp; save recording
+          </button>
         </div>
 
         <div class="banner banner-done" id="msg-done" style="display:none">

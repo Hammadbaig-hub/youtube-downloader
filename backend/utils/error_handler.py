@@ -1,12 +1,8 @@
 import logging
-import os
 from pathlib import Path
 
-if os.getenv("VERCEL"):
-    _LOG_DIR = Path("/tmp")
-else:
-    _LOG_DIR = Path(__file__).parent.parent / "logs"
-    _LOG_DIR.mkdir(exist_ok=True)
+_LOG_DIR = Path(__file__).parent.parent / "logs"
+_LOG_DIR.mkdir(exist_ok=True)
 
 try:
     logging.basicConfig(
@@ -30,19 +26,48 @@ ERROR_MESSAGES = {
     "rate_limit": "YouTube rate limit (HTTP 429). Wait a few minutes and try again.",
     "unavailable": "This video is unavailable or private.",
     "future_stream": "This video is a future live stream that hasn't started yet.",
+    "js_runtime": (
+        "This video needs YouTube's signature check solved, which requires a "
+        "JavaScript runtime on the server. Install Node.js (or Deno) and retry."
+    ),
+    "forbidden": (
+        "YouTube rejected the media link (HTTP 403). This usually means the "
+        "link expired mid-download — please try again."
+    ),
+    "geo": "This video is not available in the server's region.",
+    "age": "This video is age-restricted and needs a signed-in YouTube account.",
+    "no_format": (
+        "This video isn't available in the quality you picked. "
+        "Try a lower quality, or Audio Only (MP3)."
+    ),
 }
+
+# Ordered most-specific first: several yt-dlp messages match more than one rule.
+_PATTERNS: list[tuple[tuple[str, ...], str]] = [
+    (("Sign in to confirm you're not a bot",
+      "Sign in to confirm that you're not a bot",
+      "confirm you're not a bot"), "bot_detection"),
+    (("Sign in to confirm your age", "age-restricted", "inappropriate for some users"), "age"),
+    (("Signature solving failed", "n challenge solving failed",
+      "No supported JavaScript runtime", "challenge solver"), "js_runtime"),
+    (("HTTP Error 429", "Too Many Requests"), "rate_limit"),
+    (("HTTP Error 403", "Forbidden"), "forbidden"),
+    (("This live event will begin", "live event will begin in"), "future_stream"),
+    (("available in your country", "available from your location",
+      "geo restricted", "geo-restricted", "blocked it in your country",
+      "not available in your region"), "geo"),
+    (("Video unavailable", "This video is private",
+      "video has been removed"), "unavailable"),
+    (("Requested format is not available",), "no_format"),
+]
 
 
 def classify_error(exc: Exception) -> str:
     msg = str(exc)
-    if "Sign in to confirm" in msg or "bot" in msg.lower():
-        return ERROR_MESSAGES["bot_detection"]
-    if "429" in msg or "Too Many Requests" in msg:
-        return ERROR_MESSAGES["rate_limit"]
-    if "Video unavailable" in msg:
-        return ERROR_MESSAGES["unavailable"]
-    if "This live event will begin" in msg:
-        return ERROR_MESSAGES["future_stream"]
+    lowered = msg.lower()
+    for needles, key in _PATTERNS:
+        if any(n.lower() in lowered for n in needles):
+            return ERROR_MESSAGES[key]
     return msg
 
 

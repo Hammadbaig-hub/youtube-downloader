@@ -385,6 +385,26 @@ body {
 }
 .badge-video    { background: rgba(255,0,0,.2);    color: #ff6b6b !important; border: 1px solid rgba(255,0,0,.35); }
 .badge-playlist { background: rgba(251,146,60,.2); color: #fb923c !important; border: 1px solid rgba(251,146,60,.4); }
+.badge-live     { background: rgba(220,38,38,.22); color: #f87171 !important; border: 1px solid rgba(220,38,38,.5); animation: live-pulse 2s ease-in-out infinite; }
+@keyframes live-pulse { 0%,100% { opacity: 1; } 50% { opacity: .55; } }
+
+/* Live recording controls */
+.live-note {
+  margin: 10px 2px 0; font-size: 12px; line-height: 1.5;
+  color: var(--text-dim);
+}
+#stop-wrap { display: flex; justify-content: center; margin-top: 14px; }
+.stop-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 18px; border-radius: 8px; cursor: pointer;
+  font-size: 13px; font-weight: 600;
+  color: #f87171; background: rgba(220,38,38,.12);
+  border: 1px solid rgba(220,38,38,.4);
+  transition: background .15s, border-color .15s;
+}
+.stop-btn:hover:not(:disabled) { background: rgba(220,38,38,.22); border-color: rgba(220,38,38,.65); }
+.stop-btn:disabled { opacity: .6; cursor: default; }
+.stop-btn i { width: 15px; height: 15px; }
 .info-text { flex: 1; min-width: 0; }
 .info-title {
   font-size: 15px; font-weight: 700; color: #ffffff !important;
